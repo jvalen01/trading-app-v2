@@ -1,0 +1,69 @@
+export interface Trade {
+  id: number;
+  ticker: string;
+  status: 'active' | 'closed';
+  trade_rating?: number; // 0-5 rating
+  trade_type?: 'Breakout' | 'Short Pivot' | 'Parabolic Long' | 'Day Trade' | 'EP' | 'UnR';
+  ncfd?: number; // Number input
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Transaction {
+  id: number;
+  trade_id: number;
+  type: 'buy' | 'sell_partial' | 'sell_all';
+  price: number;
+  quantity: number;
+  transaction_date: string;
+  notes?: string;
+  created_at: string;
+}
+
+export interface TradeMetrics extends Trade {
+  currentQuantity: number;
+  averageBuyPrice: number;
+  totalCost: number;
+  totalBought: number;
+  totalSold: number;
+  transactions: Transaction[];
+}
+
+export interface ClosedTradeMetrics extends TradeMetrics {
+  averageExitPrice: number;
+  realizedPL: number;
+  returnPercentage: number;
+  entryDate: string;
+  exitDate: string;
+}
+
+export interface AddTradeRequest {
+  ticker: string;
+  price: number;
+  quantity: number;
+  date: string;
+  notes?: string;
+  trade_rating?: number;
+  trade_type?: 'Breakout' | 'Short Pivot' | 'Parabolic Long' | 'Day Trade' | 'EP' | 'UnR';
+  ncfd?: number;
+}
+
+export interface SellPartialRequest {
+  quantity: number;
+  price: number;
+  date: string;
+  notes?: string;
+}
+
+export interface SellAllRequest {
+  price: number;
+  date: string;
+  notes?: string;
+}
+
+export interface UpdateTransactionRequest {
+  price: number;
+  quantity: number;
+  date: string;
+  notes?: string;
+}

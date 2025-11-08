@@ -1,0 +1,116 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: oklch(0.99 0.005 240);        /* Very subtle warm white */
+    --foreground: oklch(0.15 0.01 240);         /* Professional dark gray */
+    --card: oklch(97.519% 0.00352 248.578);             /* Slightly different from background */
+    --card-foreground: oklch(0.15 0.01 240);    /* Same as foreground for consistency */
+    --popover: oklch(0.995 0.002 240);          /* Same as card */
+    --popover-foreground: oklch(0.15 0.01 240); /* Same as foreground */
+    --muted: oklch(0.94 0.008 240);             /* Subtle muted background */
+    --muted-foreground: oklch(0.45 0.02 240);   /* Medium gray for secondary text */
+    --accent: oklch(0.96 0.01 240);             /* Very subtle accent */
+    --accent-foreground: oklch(0.15 0.01 240);  /* Dark text on accent */
+    --destructive: oklch(0.55 0.22 25);          /* Professional red */
+    --destructive-foreground: oklch(0.98 0.005 240); /* Light text on red */
+    --border: oklch(0.88 0.015 240);            /* Subtle border gray */
+    --input: oklch(0.88 0.015 240);             /* Same as border */
+    --primary: oklch(0.45 0.15 240);            /* Professional blue */
+    --primary-foreground: oklch(0.98 0.005 240); /* Light text on primary */
+    --secondary: oklch(0.92 0.02 240);          /* Subtle secondary */
+    --secondary-foreground: oklch(0.15 0.01 240); /* Dark text on secondary */
+    --ring: oklch(0.45 0.15 240);               /* Same as primary for focus rings */
+    --success: oklch(0.55 0.18 142);            /* Professional green */
+    --success-foreground: oklch(0.98 0.005 240); /* Light text on success */
+    --success-light: oklch(0.25 0.08 142);      /* Light green for backgrounds */
+    --warning: oklch(0.6 0.2 45);               /* Professional amber */
+    --warning-foreground: oklch(0.15 0.01 240); /* Dark text on warning */
+    --warning-light: oklch(0.3 0.1 45);         /* Light amber */
+    --danger: oklch(0.55 0.22 25);              /* Same as destructive */
+    --danger-foreground: oklch(0.98 0.005 240); /* Light text on danger */
+    --danger-light: oklch(0.3 0.11 25);         /* Light red */
+    --radius: 0.5rem;
+    --chart-1: oklch(0.55 0.18 240);            /* Professional blue */
+    --chart-2: oklch(0.6 0.15 142);             /* Professional green */
+    --chart-3: oklch(0.55 0.2 45);              /* Professional amber */
+    --chart-4: oklch(0.5 0.22 25);              /* Professional red */
+    --chart-5: oklch(0.55 0.16 280);            /* Professional purple */
+  }
+}
+
+html {
+  color-scheme: light;
+}
+
+body {
+  @apply bg-background text-foreground;
+  color-scheme: light;
+}
+
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #535bf2;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+button:hover {
+  border-color: #646cff;
+}
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+  a:hover {
+    color: #747bff;
+  }
+  button {
+    background-color: #f9f9f9;
+  }
+}
+
+
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
