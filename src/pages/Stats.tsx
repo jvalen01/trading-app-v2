@@ -183,3 +183,5 @@ const calculateStats = (activeTrades: TradeMetrics[], closedTrades: ClosedTradeM
     </div>
   );
 }
+
+export default Stats;

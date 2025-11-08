@@ -1,4 +1,4 @@
-export interface Trade {
+export type Trade = {
   id: number;
   ticker: string;
   status: 'active' | 'closed';
@@ -7,9 +7,9 @@ export interface Trade {
   ncfd?: number; // Number input
   created_at: string;
   updated_at: string;
-}
+};
 
-export interface Transaction {
+export type Transaction = {
   id: number;
   trade_id: number;
   type: 'buy' | 'sell_partial' | 'sell_all';
@@ -18,18 +18,18 @@ export interface Transaction {
   transaction_date: string;
   notes?: string;
   created_at: string;
-}
+};
 
-export interface TradeMetrics extends Trade {
+export type TradeMetrics = Trade & {
   currentQuantity: number;
   averageBuyPrice: number;
   totalCost: number;
   totalBought: number;
   totalSold: number;
   transactions: Transaction[];
-}
+};
 
-export interface ClosedTradeMetrics extends TradeMetrics {
+export type ClosedTradeMetrics = TradeMetrics & {
   averageExitPrice: number;
   realizedPL: number;
   returnPercentage?: number; // For backward compatibility
@@ -38,9 +38,9 @@ export interface ClosedTradeMetrics extends TradeMetrics {
   exitDate: string;
   accountValueAtEntry?: number;
   rMultiple?: number;
-}
+};
 
-export interface AddTradeRequest {
+export type AddTradeRequest = {
   ticker: string;
   price: number;
   quantity: number;
@@ -49,24 +49,24 @@ export interface AddTradeRequest {
   trade_rating?: number;
   trade_type?: 'Breakout' | 'Short Pivot' | 'Parabolic Long' | 'Day Trade' | 'EP' | 'UnR';
   ncfd?: number;
-}
+};
 
-export interface SellPartialRequest {
+export type SellPartialRequest = {
   quantity: number;
   price: number;
   date: string;
   notes?: string;
-}
+};
 
-export interface SellAllRequest {
+export type SellAllRequest = {
   price: number;
   date: string;
   notes?: string;
-}
+};
 
-export interface UpdateTransactionRequest {
+export type UpdateTransactionRequest = {
   price: number;
   quantity: number;
   date: string;
   notes?: string;
-}
+};

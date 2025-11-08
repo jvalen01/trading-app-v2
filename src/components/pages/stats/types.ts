@@ -1,6 +1,6 @@
 import type { ClosedTradeMetrics } from '@/types';
 
-export interface TradeStats {
+export type TradeStats = {
   totalTrades: number;
   activeTrades: number;
   closedTrades: number;
@@ -16,4 +16,4 @@ export interface TradeStats {
   currentCapital: number;
   roiPercentage: number;
   capitalGrowth: number;
-}
+};

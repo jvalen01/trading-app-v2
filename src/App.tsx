@@ -1,11 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { Navbar } from './components/common/Navbar';
-import { Mytrades } from './pages/Mytrades';
-import { Stats } from './pages/Stats';
 import { Toaster } from './components/ui/toaster';
 import { type DateRange } from 'react-day-picker';
 import { type DateRangePreset } from './components/common/DateRangeFilter';
 import { capitalAPI } from './api/client';
+
+// Lazy load pages for code splitting
+const Mytrades = lazy(() => import('./pages/Mytrades'));
+const Stats = lazy(() => import('./pages/Stats'));
 
 type Page = 'trades' | 'stats';
 
@@ -99,7 +101,9 @@ function App() {
         startingCapital={startingCapital}
         onStartingCapitalChange={setStartingCapital}
       />
-      {renderPage()}
+      <Suspense fallback={<div className="flex-1 flex items-center justify-center">Loading...</div>}>
+        {renderPage()}
+      </Suspense>
       <Toaster />
     </div>
   );

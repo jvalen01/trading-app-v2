@@ -162,3 +162,5 @@ export function Mytrades({ dateRange, startingCapital }: MyTradesProps) {
     </div>
   );
 }
+
+export default Mytrades;
