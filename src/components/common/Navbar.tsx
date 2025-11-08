@@ -1,8 +1,8 @@
 import { Button } from '@/components/ui/button';
 import { BarChart3, LayoutDashboard } from 'lucide-react';
 import { type DateRange } from 'react-day-picker';
-import { DateRangeFilter, type DateRangePreset } from '@/components/DateRangeFilter';
-import { CapitalManagementDialog } from '@/components/CapitalManagementDialog';
+import { DateRangeFilter, type DateRangePreset } from '@/components/common/DateRangeFilter';
+import { CapitalManagementDialog } from '@/components/common/CapitalManagementDialog';
 
 type Page = 'trades' | 'stats';
 

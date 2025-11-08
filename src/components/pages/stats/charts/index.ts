@@ -1,0 +1,1 @@
+export { RMultipleChart } from './RMultipleChart';

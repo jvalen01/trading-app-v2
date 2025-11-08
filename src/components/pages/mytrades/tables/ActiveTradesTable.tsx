@@ -1,20 +1,29 @@
 import { useState } from 'react';
-import { ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Card, CardContent } from '@/components/ui/card';
 import { TransactionsTable } from './TransactionsTable';
 import { format } from 'date-fns';
-import type { ClosedTradeMetrics, Transaction } from '@/types';
+import type { TradeMetrics, Transaction } from '@/types';
 
-interface HistoricTradesTableProps {
-  trades: ClosedTradeMetrics[];
+interface ActiveTradesTableProps {
+  trades: TradeMetrics[];
+  onBuyMore: (trade: TradeMetrics) => void;
+  onSellPartial: (trade: TradeMetrics) => void;
+  onSellAll: (trade: TradeMetrics) => void;
   onEditTransaction: (transaction: Transaction) => void;
-  onDeleteTrade: (tradeId: number) => void;
 }
 
-export function HistoricTradesTable({ trades, onEditTransaction, onDeleteTrade }: HistoricTradesTableProps) {
+export function ActiveTradesTable({
+  trades,
+  onBuyMore,
+  onSellPartial,
+  onSellAll,
+  onEditTransaction,
+}: ActiveTradesTableProps) {
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
 
   const toggleRow = (tradeId: number) => {
@@ -27,19 +36,6 @@ export function HistoricTradesTable({ trades, onEditTransaction, onDeleteTrade }
     setExpandedRows(newExpanded);
   };
 
-  const getPLBadgeVariant = (pl: number): 'default' | 'secondary' | 'destructive' | 'outline' => {
-    return pl >= 0 ? 'default' : 'destructive';
-  };
-
-  const getReturnBadgeColor = (returnPct: number) => {
-    return returnPct >= 0 ? 'bg-success text-success-foreground' : 'bg-danger text-danger-foreground';
-  };
-
-  const getRMultipleColor = (rMultiple: number | undefined) => {
-    if (!rMultiple) return 'text-muted-foreground';
-    return rMultiple >= 0 ? 'text-success' : 'text-danger';
-  };
-
   return (
     <div className="space-y-0 border border-border rounded-lg overflow-hidden bg-card/50">
       <Table>
@@ -47,15 +43,10 @@ export function HistoricTradesTable({ trades, onEditTransaction, onDeleteTrade }
           <TableRow className="hover:bg-card/80">
             <TableHead className="w-8 text-card-foreground"></TableHead>
             <TableHead className="text-card-foreground">Ticker</TableHead>
-            <TableHead className="text-right text-card-foreground">Qty Traded</TableHead>
-            <TableHead className="text-right text-card-foreground">Avg Buy Price</TableHead>
-            <TableHead className="text-right text-card-foreground">Avg Sell Price</TableHead>
-            <TableHead className="text-card-foreground">Realized P&L</TableHead>
-            <TableHead className="text-card-foreground">Return %</TableHead>
-            <TableHead className="text-right text-card-foreground">Account @ Entry</TableHead>
-            <TableHead className="text-card-foreground">R-Multiple</TableHead>
+            <TableHead className="text-right text-card-foreground">Quantity</TableHead>
+            <TableHead className="text-right text-card-foreground">Avg Price</TableHead>
+            <TableHead className="text-right text-card-foreground">Total Cost</TableHead>
             <TableHead className="text-card-foreground">Entry Date</TableHead>
-            <TableHead className="text-card-foreground">Exit Date</TableHead>
             <TableHead className="text-card-foreground">Rating</TableHead>
             <TableHead className="text-card-foreground">Type</TableHead>
             <TableHead className="text-card-foreground">NCFD</TableHead>
@@ -65,8 +56,8 @@ export function HistoricTradesTable({ trades, onEditTransaction, onDeleteTrade }
         <TableBody>
           {trades.length === 0 ? (
             <TableRow className="hover:bg-card/80">
-              <TableCell colSpan={15} className="text-center text-muted-foreground py-8">
-                No closed trades yet.
+              <TableCell colSpan={10} className="text-center text-muted-foreground py-8">
+                No active trades. Start by adding a new trade.
               </TableCell>
             </TableRow>
           ) : (
@@ -86,35 +77,16 @@ export function HistoricTradesTable({ trades, onEditTransaction, onDeleteTrade }
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <span className="font-semibold">{trade.ticker}</span>
-                      <Badge variant="outline">CLOSED</Badge>
+                      <Badge variant="outline">ACTIVE</Badge>
                     </div>
                   </TableCell>
-                  <TableCell className="text-right">{trade.totalBought.toFixed(2)}</TableCell>
+                  <TableCell className="text-right">{trade.currentQuantity.toFixed(2)}</TableCell>
                   <TableCell className="text-right">${trade.averageBuyPrice.toFixed(2)}</TableCell>
-                  <TableCell className="text-right">${trade.averageExitPrice.toFixed(2)}</TableCell>
-                  <TableCell>
-                    <Badge variant={getPLBadgeVariant(trade.realizedPL)}>
-                      ${trade.realizedPL.toFixed(2)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge className={getReturnBadgeColor(trade.pnlPercentage ?? trade.returnPercentage ?? 0)}>
-                      {(trade.pnlPercentage ?? trade.returnPercentage ?? 0) > 0 ? '+' : ''}{(trade.pnlPercentage ?? trade.returnPercentage ?? 0).toFixed(2)}%
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {trade.accountValueAtEntry ? `$${trade.accountValueAtEntry.toFixed(0)}` : '-'}
-                  </TableCell>
-                  <TableCell>
-                    <span className={`font-semibold ${getRMultipleColor(trade.rMultiple)}`}>
-                      {trade.rMultiple !== undefined ? `${trade.rMultiple >= 0 ? '+' : ''}${(trade.rMultiple * 100).toFixed(2)}%` : '-'}
-                    </span>
-                  </TableCell>
-                  <TableCell>{format(new Date(trade.entryDate), 'MMM dd, yyyy')}</TableCell>
-                  <TableCell>{format(new Date(trade.exitDate), 'MMM dd, yyyy')}</TableCell>
+                  <TableCell className="text-right">${trade.totalCost.toFixed(2)}</TableCell>
+                  <TableCell>{trade.transactions.length > 0 ? format(new Date(trade.transactions[0].transaction_date), 'MMM dd, yyyy') : '-'}</TableCell>
                   <TableCell>
                     {trade.trade_rating !== undefined ? (
-                      <Badge variant="outline">{trade.trade_rating}/5</Badge>
+                      <Badge variant="outline">{trade.trade_rating}</Badge>
                     ) : (
                       <span className="text-muted-foreground">-</span>
                     )}
@@ -134,18 +106,26 @@ export function HistoricTradesTable({ trades, onEditTransaction, onDeleteTrade }
                     )}
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => onDeleteTrade(trade.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="secondary" size="sm">
+                          ⋯
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => onBuyMore(trade)}>Buy More</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => onSellPartial(trade)}>Sell Partial</DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => onSellAll(trade)} className="text-destructive">
+                          Close Position
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </TableCell>
                 </TableRow>
                 {expandedRows.has(trade.id) && (
                   <TableRow>
-                    <TableCell colSpan={15} className="bg-muted/30 p-0">
+                    <TableCell colSpan={7} className="bg-muted/30 p-0">
                       <Card className="m-4 border-0 shadow-none">
                         <CardContent className="pt-6">
                           <div className="mb-4">

@@ -1,25 +1,12 @@
 import { useEffect, useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, Plus } from 'lucide-react';
-import { ActiveTradesTable } from '../components/ActiveTradesTable';
-import { HistoricTradesTable } from '../components/HistoricTradesTable';
-import { AddTradeDialog } from '../components/AddTradeDialog';
-import { SellPartialDialog } from '../components/SellPartialDialog';
-import { SellAllDialog } from '../components/SellAllDialog';
+import { MyTradesHeader, MyTradesErrorAlert, ActiveTradesSection, HistoricTradesSection, AddTradeDialog, SellPartialDialog, SellAllDialog, type MyTradesProps } from '../components/pages/mytrades';
 import { EditTransactionDialog } from '../components/EditTransactionDialog';
 import tradesAPI from '../api/client';
 import { useToast } from '../hooks/use-toast';
 import { type DateRange } from 'react-day-picker';
 import type { TradeMetrics, ClosedTradeMetrics, Transaction } from '../types';
 
-interface DashboardProps {
-  dateRange?: DateRange;
-  startingCapital: number;
-}
-
-export function Dashboard({ dateRange, startingCapital }: DashboardProps) {
+export function Mytrades({ dateRange, startingCapital }: MyTradesProps) {
   const { toast } = useToast();
   const [allActiveTrades, setAllActiveTrades] = useState<TradeMetrics[]>([]);
   const [allClosedTrades, setAllClosedTrades] = useState<ClosedTradeMetrics[]>([]);
@@ -75,7 +62,7 @@ export function Dashboard({ dateRange, startingCapital }: DashboardProps) {
       setAllActiveTrades(active);
       setAllClosedTrades(closed);
 
-      const { filteredActive, filteredClosed } = filterTradesByDateRange(active, closed, dateRange);
+  const { filteredActive, filteredClosed } = filterTradesByDateRange(active, closed, dateRange);
       setFilteredActiveTrades(filteredActive);
       setFilteredClosedTrades(filteredClosed);
     } catch (err) {
@@ -145,63 +132,27 @@ export function Dashboard({ dateRange, startingCapital }: DashboardProps) {
   return (
     <div className="flex-1 w-full h-full space-y-4 p-6 bg-background overflow-y-auto">
       {/* Header with Add Trade Button */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">My Trades</h1>
-          <p className="text-muted-foreground">Manage your trading positions and history</p>
-        </div>
-        <Button onClick={() => setAddTradeOpen(true)} className="gap-2">
-          <Plus className="h-4 w-4" />
-          Add Trade
-        </Button>
-      </div>
+      <MyTradesHeader onAddTrade={() => setAddTradeOpen(true)} />
 
-      {error && (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
+      {error && <MyTradesErrorAlert error={error} />}
 
       {/* Active Trades Section */}
-      <Card className="bg-card border-border shadow-lg">
-        <CardHeader>
-          <CardTitle className="text-card-foreground">Active Trades</CardTitle>
-          <CardDescription>Your open positions</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="text-center text-muted-foreground py-8">Loading trades...</div>
-          ) : (
-            <ActiveTradesTable
-              trades={filteredActiveTrades}
-              onBuyMore={handleBuyMore}
-              onSellPartial={handleSellPartial}
-              onSellAll={handleSellAll}
-              onEditTransaction={handleEditTransaction}
-            />
-          )}
-        </CardContent>
-      </Card>
+      <ActiveTradesSection
+        trades={filteredActiveTrades}
+        isLoading={isLoading}
+        onBuyMore={handleBuyMore}
+        onSellPartial={handleSellPartial}
+        onSellAll={handleSellAll}
+        onEditTransaction={handleEditTransaction}
+      />
 
       {/* Historic Trades Section */}
-      <Card className="bg-card border-border shadow-lg">
-        <CardHeader>
-          <CardTitle className="text-card-foreground">Closed Trades</CardTitle>
-          <CardDescription>Your completed positions</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="text-center text-muted-foreground py-8">Loading trades...</div>
-          ) : (
-            <HistoricTradesTable
-              trades={filteredClosedTrades}
-              onEditTransaction={handleEditTransaction}
-              onDeleteTrade={handleDeleteTrade}
-            />
-          )}
-        </CardContent>
-      </Card>
+      <HistoricTradesSection
+        trades={filteredClosedTrades}
+        isLoading={isLoading}
+        onEditTransaction={handleEditTransaction}
+        onDeleteTrade={handleDeleteTrade}
+      />
 
       {/* Dialogs */}
       <AddTradeDialog open={addTradeOpen} onOpenChange={setAddTradeOpen} onSuccess={fetchTrades} />

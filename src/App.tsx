@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Navbar } from './components/Navbar';
-import { Dashboard } from './pages/Dashboard';
+import { Navbar } from './components/common/Navbar';
+import { Mytrades } from './pages/Mytrades';
 import { Stats } from './pages/Stats';
 import { Toaster } from './components/ui/toaster';
 import { type DateRange } from 'react-day-picker';
-import { type DateRangePreset } from './components/DateRangeFilter';
+import { type DateRangePreset } from './components/common/DateRangeFilter';
 import { capitalAPI } from './api/client';
 
 type Page = 'trades' | 'stats';
@@ -80,11 +80,11 @@ function App() {
 
     switch (currentPage) {
       case 'trades':
-        return <Dashboard dateRange={dateRange} startingCapital={startingCapital} />;
+        return <Mytrades dateRange={dateRange} startingCapital={startingCapital} />;
       case 'stats':
         return <Stats dateRange={dateRange} startingCapital={startingCapital} />;
       default:
-        return <Dashboard dateRange={dateRange} startingCapital={startingCapital} />;
+        return <Mytrades dateRange={dateRange} startingCapital={startingCapital} />;
     }
   };
 

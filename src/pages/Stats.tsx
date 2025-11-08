@@ -1,30 +1,10 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, TrendingUp, TrendingDown, DollarSign, BarChart3 } from 'lucide-react';
 import { type DateRange } from 'react-day-picker';
 import tradesAPI from '@/api/client';
-import { RMultipleChart } from '@/components/RMultipleChart';
+import { RMultipleChart, StatsOverviewCards, TradePerformanceCard, TradeDistributionCard, StatsLoadingState, StatsErrorState } from '@/components/pages/stats';
 import type { TradeMetrics, ClosedTradeMetrics } from '@/types';
-
-interface TradeStats {
-  totalTrades: number;
-  activeTrades: number;
-  closedTrades: number;
-  totalPortfolioValue: number;
-  totalRealizedPL: number;
-  totalUnrealizedPL: number;
-  winRate: number;
-  averageTradeSize: number;
-  bestTrade: ClosedTradeMetrics | null;
-  worstTrade: ClosedTradeMetrics | null;
-  tradesByType: Record<string, number>;
-  tradesByRating: Record<number, number>;
-  currentCapital: number;
-  roiPercentage: number;
-  capitalGrowth: number;
-}
+import type { TradeStats } from '@/components/pages/stats/types';
 
 export function Stats({ dateRange, startingCapital }: { dateRange: DateRange | undefined; startingCapital: number }) {
   const [stats, setStats] = useState<TradeStats | null>(null);
@@ -166,25 +146,11 @@ const calculateStats = (activeTrades: TradeMetrics[], closedTrades: ClosedTradeM
   }, [dateRange, recalculateStats, allActiveTrades.length, allClosedTrades.length]);
 
   if (isLoading) {
-    return (
-      <div className="flex-1 w-full h-full flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading statistics...</p>
-        </div>
-      </div>
-    );
+    return <StatsLoadingState />;
   }
 
   if (error) {
-    return (
-      <div className="flex-1 w-full h-full p-6">
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      </div>
-    );
+    return <StatsErrorState error={error} />;
   }
 
   if (!stats) {
@@ -204,167 +170,12 @@ const calculateStats = (activeTrades: TradeMetrics[], closedTrades: ClosedTradeM
       </div>
 
       {/* Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Current Capital</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className={`text-2xl font-bold ${stats.capitalGrowth >= 0 ? 'text-success' : 'text-destructive'}`}>
-              ${stats.currentCapital.toFixed(2)}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Starting: ${startingCapital.toFixed(0)}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">ROI</CardTitle>
-            {stats.roiPercentage >= 0 ? (
-              <TrendingUp className="h-4 w-4 text-success" />
-            ) : (
-              <TrendingDown className="h-4 w-4 text-destructive" />
-            )}
-          </CardHeader>
-          <CardContent>
-            <div className={`text-2xl font-bold ${stats.roiPercentage >= 0 ? 'text-success' : 'text-destructive'}`}>
-              {stats.roiPercentage >= 0 ? '+' : ''}{stats.roiPercentage.toFixed(2)}%
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Return on investment
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Trades</CardTitle>
-            <BarChart3 className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalTrades}</div>
-            <p className="text-xs text-muted-foreground">
-              {stats.activeTrades} active, {stats.closedTrades} closed
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Portfolio Value</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">${stats.totalPortfolioValue.toFixed(2)}</div>
-            <p className="text-xs text-muted-foreground">
-              Active positions only
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Realized P&L</CardTitle>
-            {stats.totalRealizedPL >= 0 ? (
-              <TrendingUp className="h-4 w-4 text-success" />
-            ) : (
-              <TrendingDown className="h-4 w-4 text-destructive" />
-            )}
-          </CardHeader>
-          <CardContent>
-            <div className={`text-2xl font-bold ${stats.totalRealizedPL >= 0 ? 'text-success' : 'text-destructive'}`}>
-              ${stats.totalRealizedPL.toFixed(2)}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              From closed trades
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+      <StatsOverviewCards stats={stats} startingCapital={startingCapital} />
 
       {/* Detailed Stats */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Trade Performance */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Trade Performance</CardTitle>
-            <CardDescription>Best and worst performing trades</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {stats.bestTrade && (
-              <div className="flex items-center justify-between p-3 bg-success/10 rounded-lg">
-                <div>
-                  <p className="font-medium text-success">Best Trade</p>
-                  <p className="text-sm text-muted-foreground">{stats.bestTrade.ticker}</p>
-                </div>
-                <div className="text-right">
-                  <p className="font-bold text-success">+${stats.bestTrade.realizedPL.toFixed(2)}</p>
-                  <p className="text-xs text-muted-foreground">{(stats.bestTrade.pnlPercentage ?? stats.bestTrade.returnPercentage ?? 0).toFixed(2)}%</p>
-                </div>
-              </div>
-            )}
-
-            {stats.worstTrade && (
-              <div className="flex items-center justify-between p-3 bg-destructive/10 rounded-lg">
-                <div>
-                  <p className="font-medium text-destructive">Worst Trade</p>
-                  <p className="text-sm text-muted-foreground">{stats.worstTrade.ticker}</p>
-                </div>
-                <div className="text-right">
-                  <p className="font-bold text-destructive">${stats.worstTrade.realizedPL.toFixed(2)}</p>
-                  <p className="text-xs text-muted-foreground">{(stats.worstTrade.pnlPercentage ?? stats.worstTrade.returnPercentage ?? 0).toFixed(2)}%</p>
-                </div>
-              </div>
-            )}
-
-            <div className="pt-4 border-t">
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-medium">Average Trade Size</span>
-                <span className="font-bold">${stats.averageTradeSize.toFixed(2)}</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Trade Distribution */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Trade Distribution</CardTitle>
-            <CardDescription>Breakdown by type and rating</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <h4 className="font-medium mb-2">By Trade Type</h4>
-              <div className="space-y-2">
-                {Object.entries(stats.tradesByType).map(([type, count]) => (
-                  <div key={type} className="flex justify-between items-center">
-                    <span className="text-sm">{type}</span>
-                    <Badge variant="secondary">{count}</Badge>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {Object.keys(stats.tradesByRating).length > 0 && (
-              <div className="pt-4 border-t">
-                <h4 className="font-medium mb-2">By Rating</h4>
-                <div className="space-y-2">
-                  {Object.entries(stats.tradesByRating)
-                    .sort(([a], [b]) => Number(b) - Number(a))
-                    .map(([rating, count]) => (
-                    <div key={rating} className="flex justify-between items-center">
-                      <span className="text-sm">{rating}/5 ⭐</span>
-                      <Badge variant="outline">{count}</Badge>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <TradePerformanceCard stats={stats} />
+        <TradeDistributionCard stats={stats} />
       </div>
 
       {/* R-Multiple Chart */}
