@@ -1,19 +1,20 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { MyTradesHeader, MyTradesErrorAlert, ActiveTradesSection, HistoricTradesSection, AddTradeDialog, SellPartialDialog, SellAllDialog, type MyTradesProps } from '../components/pages/mytrades';
 import { EditTransactionDialog } from '../components/EditTransactionDialog';
-import tradesAPI from '../api/client';
 import { useToast } from '../hooks/use-toast';
+import { useActiveTrades, useClosedTradesWithRMetrics, useDeleteTrade } from '../hooks/use-trades';
 import { type DateRange } from 'react-day-picker';
 import type { TradeMetrics, ClosedTradeMetrics, Transaction } from '../types';
 
 export function Mytrades({ dateRange, startingCapital }: MyTradesProps) {
   const { toast } = useToast();
-  const [allActiveTrades, setAllActiveTrades] = useState<TradeMetrics[]>([]);
-  const [allClosedTrades, setAllClosedTrades] = useState<ClosedTradeMetrics[]>([]);
-  const [filteredActiveTrades, setFilteredActiveTrades] = useState<TradeMetrics[]>([]);
-  const [filteredClosedTrades, setFilteredClosedTrades] = useState<ClosedTradeMetrics[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+
+  // React Query hooks for data fetching
+  const { data: allActiveTrades = [], isLoading: isLoadingActive, error: activeError } = useActiveTrades();
+  const { data: allClosedTrades = [], isLoading: isLoadingClosed, error: closedError } = useClosedTradesWithRMetrics(startingCapital);
+
+  // Mutation hooks
+  const deleteTradeMutation = useDeleteTrade();
 
   // Dialog states
   const [addTradeOpen, setAddTradeOpen] = useState(false);
@@ -53,43 +54,12 @@ export function Mytrades({ dateRange, startingCapital }: MyTradesProps) {
     return { filteredActive, filteredClosed };
   };
 
-  const fetchTrades = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      const active = await tradesAPI.getActiveTrades();
-      const closed = await tradesAPI.getClosedTradesWithRMetrics(startingCapital);
-      setAllActiveTrades(active);
-      setAllClosedTrades(closed);
+  // Filter trades by date range (client-side filtering)
+  const { filteredActive, filteredClosed } = filterTradesByDateRange(allActiveTrades, allClosedTrades, dateRange);
 
-  const { filteredActive, filteredClosed } = filterTradesByDateRange(active, closed, dateRange);
-      setFilteredActiveTrades(filteredActive);
-      setFilteredClosedTrades(filteredClosed);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to load trades';
-      setError(message);
-      toast({
-        title: 'Error',
-        description: message,
-        variant: 'destructive',
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchTrades();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    if (allActiveTrades.length > 0 || allClosedTrades.length > 0) {
-      const { filteredActive, filteredClosed } = filterTradesByDateRange(allActiveTrades, allClosedTrades, dateRange);
-      setFilteredActiveTrades(filteredActive);
-      setFilteredClosedTrades(filteredClosed);
-    }
-  }, [dateRange, allActiveTrades, allClosedTrades]);
+  // Combined loading and error states
+  const isLoading = isLoadingActive || isLoadingClosed;
+  const error = activeError || closedError;
 
   const handleBuyMore = (trade: TradeMetrics) => {
     setSelectedTrade(trade);
@@ -113,12 +83,11 @@ export function Mytrades({ dateRange, startingCapital }: MyTradesProps) {
 
   const handleDeleteTrade = async (tradeId: number) => {
     try {
-      await tradesAPI.deleteTrade(tradeId);
+      await deleteTradeMutation.mutateAsync(tradeId);
       toast({
         title: 'Success',
         description: 'Trade deleted successfully',
       });
-      fetchTrades();
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to delete trade';
       toast({
@@ -134,11 +103,11 @@ export function Mytrades({ dateRange, startingCapital }: MyTradesProps) {
       {/* Header with Add Trade Button */}
       <MyTradesHeader onAddTrade={() => setAddTradeOpen(true)} />
 
-      {error && <MyTradesErrorAlert error={error} />}
+      {error && <MyTradesErrorAlert error={error?.message || 'Failed to load trades'} />}
 
       {/* Active Trades Section */}
       <ActiveTradesSection
-        trades={filteredActiveTrades}
+        trades={filteredActive}
         isLoading={isLoading}
         onBuyMore={handleBuyMore}
         onSellPartial={handleSellPartial}
@@ -148,17 +117,17 @@ export function Mytrades({ dateRange, startingCapital }: MyTradesProps) {
 
       {/* Historic Trades Section */}
       <HistoricTradesSection
-        trades={filteredClosedTrades}
+        trades={filteredClosed}
         isLoading={isLoading}
         onEditTransaction={handleEditTransaction}
         onDeleteTrade={handleDeleteTrade}
       />
 
       {/* Dialogs */}
-      <AddTradeDialog open={addTradeOpen} onOpenChange={setAddTradeOpen} onSuccess={fetchTrades} />
-      <SellPartialDialog open={sellPartialOpen} onOpenChange={setSellPartialOpen} trade={selectedTrade} onSuccess={fetchTrades} />
-      <SellAllDialog open={sellAllOpen} onOpenChange={setSellAllOpen} trade={selectedTrade} onSuccess={fetchTrades} />
-      <EditTransactionDialog open={editTransactionOpen} onOpenChange={setEditTransactionOpen} transaction={selectedTransaction} onSuccess={fetchTrades} />
+      <AddTradeDialog open={addTradeOpen} onOpenChange={setAddTradeOpen} />
+      <SellPartialDialog open={sellPartialOpen} onOpenChange={setSellPartialOpen} trade={selectedTrade} />
+      <SellAllDialog open={sellAllOpen} onOpenChange={setSellAllOpen} trade={selectedTrade} />
+      <EditTransactionDialog open={editTransactionOpen} onOpenChange={setEditTransactionOpen} transaction={selectedTransaction} />
     </div>
   );
 }

@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -7,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
-import tradesAPI from '@/api/client';
+import { useBuyTrade } from '@/hooks/use-trades';
 
 const addTradeSchema = z.object({
   ticker: z.string().min(1, 'Ticker is required').toUpperCase(),
@@ -25,12 +24,11 @@ type AddTradeFormValues = z.infer<typeof addTradeSchema>;
 interface AddTradeDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSuccess: () => void;
 }
 
-export function AddTradeDialog({ open, onOpenChange, onSuccess }: AddTradeDialogProps) {
-  const [isLoading, setIsLoading] = useState(false);
+export function AddTradeDialog({ open, onOpenChange }: AddTradeDialogProps) {
   const { toast } = useToast();
+  const buyTradeMutation = useBuyTrade();
 
   const form = useForm<AddTradeFormValues>({
     resolver: zodResolver(addTradeSchema),
@@ -47,24 +45,20 @@ export function AddTradeDialog({ open, onOpenChange, onSuccess }: AddTradeDialog
   });
 
   const onSubmit = async (values: AddTradeFormValues) => {
-    setIsLoading(true);
     try {
-      await tradesAPI.buyTrade(values);
+      await buyTradeMutation.mutateAsync(values);
       toast({
         title: 'Success',
         description: 'Trade added successfully',
       });
       form.reset();
       onOpenChange(false);
-      onSuccess();
     } catch (error) {
       toast({
         title: 'Error',
         description: error instanceof Error ? error.message : 'Failed to add trade',
         variant: 'destructive',
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -208,8 +202,8 @@ export function AddTradeDialog({ open, onOpenChange, onSuccess }: AddTradeDialog
               <Button type="button" variant="destructive" onClick={() => onOpenChange(false)}>
                 Cancel
               </Button>
-              <Button variant="default" type="submit" disabled={isLoading}>
-                {isLoading ? 'Adding...' : 'Add Trade'}
+              <Button variant="default" type="submit" disabled={buyTradeMutation.isPending}>
+                {buyTradeMutation.isPending ? 'Adding...' : 'Add Trade'}
               </Button>
             </DialogFooter>
           </form>

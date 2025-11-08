@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -9,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import tradesAPI from '@/api/client';
+import { useSellAll } from '@/hooks/use-trades';
 import type { TradeMetrics } from '@/types';
 
 const sellAllSchema = z.object({
@@ -24,12 +23,11 @@ interface SellAllDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   trade: TradeMetrics | null;
-  onSuccess: () => void;
 }
 
-export function SellAllDialog({ open, onOpenChange, trade, onSuccess }: SellAllDialogProps) {
-  const [isLoading, setIsLoading] = useState(false);
+export function SellAllDialog({ open, onOpenChange, trade }: SellAllDialogProps) {
   const { toast } = useToast();
+  const sellAllMutation = useSellAll();
 
   const form = useForm<SellAllFormValues>({
     resolver: zodResolver(sellAllSchema),
@@ -49,24 +47,20 @@ export function SellAllDialog({ open, onOpenChange, trade, onSuccess }: SellAllD
   const onSubmit = async (values: SellAllFormValues) => {
     if (!trade) return;
 
-    setIsLoading(true);
     try {
-      await tradesAPI.sellAll(trade.id, values);
+      await sellAllMutation.mutateAsync({ tradeId: trade.id, payload: values });
       toast({
         title: 'Success',
         description: `Trade closed - Final P&L: $${realizedPL.toFixed(2)}`,
       });
       form.reset();
       onOpenChange(false);
-      onSuccess();
     } catch (error) {
       toast({
         title: 'Error',
         description: error instanceof Error ? error.message : 'Failed to close position',
         variant: 'destructive',
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -175,8 +169,8 @@ export function SellAllDialog({ open, onOpenChange, trade, onSuccess }: SellAllD
               <Button type="button" variant="secondary" onClick={() => onOpenChange(false)}>
                 Cancel
               </Button>
-              <Button type="submit" variant="destructive" disabled={isLoading}>
-                {isLoading ? 'Closing...' : 'Close Position'}
+              <Button type="submit" variant="destructive" disabled={sellAllMutation.isPending}>
+                {sellAllMutation.isPending ? 'Closing...' : 'Close Position'}
               </Button>
             </DialogFooter>
           </form>

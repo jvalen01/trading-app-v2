@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -9,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import tradesAPI from '@/api/client';
+import { useSellPartial } from '@/hooks/use-trades';
 import type { TradeMetrics } from '@/types';
 
 const sellPartialSchema = z.object({
@@ -25,12 +24,11 @@ interface SellPartialDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   trade: TradeMetrics | null;
-  onSuccess: () => void;
 }
 
-export function SellPartialDialog({ open, onOpenChange, trade, onSuccess }: SellPartialDialogProps) {
-  const [isLoading, setIsLoading] = useState(false);
+export function SellPartialDialog({ open, onOpenChange, trade }: SellPartialDialogProps) {
   const { toast } = useToast();
+  const sellPartialMutation = useSellPartial();
 
   const form = useForm<SellPartialFormValues>({
     resolver: zodResolver(sellPartialSchema),
@@ -58,24 +56,20 @@ export function SellPartialDialog({ open, onOpenChange, trade, onSuccess }: Sell
       return;
     }
 
-    setIsLoading(true);
     try {
-      await tradesAPI.sellPartial(trade.id, values);
+      await sellPartialMutation.mutateAsync({ tradeId: trade.id, payload: values });
       toast({
         title: 'Success',
         description: `Position sold - P&L: $${realizedPL.toFixed(2)}`,
       });
       form.reset();
       onOpenChange(false);
-      onSuccess();
     } catch (error) {
       toast({
         title: 'Error',
         description: error instanceof Error ? error.message : 'Failed to sell position',
         variant: 'destructive',
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -210,8 +204,8 @@ export function SellPartialDialog({ open, onOpenChange, trade, onSuccess }: Sell
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={isLoading || !isValidQuantity}>
-                {isLoading ? 'Selling...' : 'Sell Partial'}
+              <Button type="submit" disabled={sellPartialMutation.isPending || !isValidQuantity}>
+                {sellPartialMutation.isPending ? 'Selling...' : 'Sell Partial'}
               </Button>
             </DialogFooter>
           </form>

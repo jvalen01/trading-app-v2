@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import tradesAPI from '@/api/client';
+import { useUpdateTransaction } from '@/hooks/use-trades';
 import type { Transaction } from '@/types';
 
 const editTransactionSchema = z.object({
@@ -24,12 +24,11 @@ interface EditTransactionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   transaction: Transaction | null;
-  onSuccess: () => void;
 }
 
-export function EditTransactionDialog({ open, onOpenChange, transaction, onSuccess }: EditTransactionDialogProps) {
-  const [isLoading, setIsLoading] = useState(false);
+export function EditTransactionDialog({ open, onOpenChange, transaction }: EditTransactionDialogProps) {
   const { toast } = useToast();
+  const updateTransactionMutation = useUpdateTransaction();
 
   const form = useForm<EditTransactionFormValues>({
     resolver: zodResolver(editTransactionSchema),
@@ -56,24 +55,23 @@ export function EditTransactionDialog({ open, onOpenChange, transaction, onSucce
   const onSubmit = async (values: EditTransactionFormValues) => {
     if (!transaction) return;
 
-    setIsLoading(true);
     try {
-      await tradesAPI.updateTransaction(transaction.id, values);
+      await updateTransactionMutation.mutateAsync({
+        transactionId: transaction.id,
+        payload: values
+      });
       toast({
         title: 'Success',
         description: 'Transaction updated successfully',
       });
       form.reset();
       onOpenChange(false);
-      onSuccess();
     } catch (error) {
       toast({
         title: 'Error',
         description: error instanceof Error ? error.message : 'Failed to update transaction',
         variant: 'destructive',
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -149,8 +147,8 @@ export function EditTransactionDialog({ open, onOpenChange, transaction, onSucce
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={isLoading}>
-                {isLoading ? 'Updating...' : 'Update'}
+              <Button type="submit" disabled={updateTransactionMutation.isPending}>
+                {updateTransactionMutation.isPending ? 'Updating...' : 'Update'}
               </Button>
             </DialogFooter>
           </form>
