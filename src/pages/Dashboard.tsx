@@ -16,9 +16,10 @@ import type { TradeMetrics, ClosedTradeMetrics, Transaction } from '../types';
 
 interface DashboardProps {
   dateRange?: DateRange;
+  startingCapital: number;
 }
 
-export function Dashboard({ dateRange }: DashboardProps) {
+export function Dashboard({ dateRange, startingCapital }: DashboardProps) {
   const { toast } = useToast();
   const [allActiveTrades, setAllActiveTrades] = useState<TradeMetrics[]>([]);
   const [allClosedTrades, setAllClosedTrades] = useState<ClosedTradeMetrics[]>([]);
@@ -69,7 +70,8 @@ export function Dashboard({ dateRange }: DashboardProps) {
     try {
       setIsLoading(true);
       setError(null);
-      const [active, closed] = await Promise.all([tradesAPI.getActiveTrades(), tradesAPI.getClosedTrades()]);
+      const active = await tradesAPI.getActiveTrades();
+      const closed = await tradesAPI.getClosedTradesWithRMetrics(startingCapital);
       setAllActiveTrades(active);
       setAllClosedTrades(closed);
 

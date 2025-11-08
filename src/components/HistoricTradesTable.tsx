@@ -35,6 +35,11 @@ export function HistoricTradesTable({ trades, onEditTransaction, onDeleteTrade }
     return returnPct >= 0 ? 'bg-success text-success-foreground' : 'bg-danger text-danger-foreground';
   };
 
+  const getRMultipleColor = (rMultiple: number | undefined) => {
+    if (!rMultiple) return 'text-muted-foreground';
+    return rMultiple >= 0 ? 'text-success' : 'text-danger';
+  };
+
   return (
     <div className="space-y-0 border border-border rounded-lg overflow-hidden bg-card/50">
       <Table>
@@ -47,6 +52,8 @@ export function HistoricTradesTable({ trades, onEditTransaction, onDeleteTrade }
             <TableHead className="text-right text-card-foreground">Avg Sell Price</TableHead>
             <TableHead className="text-card-foreground">Realized P&L</TableHead>
             <TableHead className="text-card-foreground">Return %</TableHead>
+            <TableHead className="text-right text-card-foreground">Account @ Entry</TableHead>
+            <TableHead className="text-card-foreground">R-Multiple</TableHead>
             <TableHead className="text-card-foreground">Entry Date</TableHead>
             <TableHead className="text-card-foreground">Exit Date</TableHead>
             <TableHead className="text-card-foreground">Rating</TableHead>
@@ -58,7 +65,7 @@ export function HistoricTradesTable({ trades, onEditTransaction, onDeleteTrade }
         <TableBody>
           {trades.length === 0 ? (
             <TableRow className="hover:bg-card/80">
-              <TableCell colSpan={13} className="text-center text-muted-foreground py-8">
+              <TableCell colSpan={15} className="text-center text-muted-foreground py-8">
                 No closed trades yet.
               </TableCell>
             </TableRow>
@@ -91,9 +98,17 @@ export function HistoricTradesTable({ trades, onEditTransaction, onDeleteTrade }
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <Badge className={getReturnBadgeColor(trade.returnPercentage)}>
-                      {trade.returnPercentage > 0 ? '+' : ''}{trade.returnPercentage.toFixed(2)}%
+                    <Badge className={getReturnBadgeColor(trade.pnlPercentage ?? trade.returnPercentage ?? 0)}>
+                      {(trade.pnlPercentage ?? trade.returnPercentage ?? 0) > 0 ? '+' : ''}{(trade.pnlPercentage ?? trade.returnPercentage ?? 0).toFixed(2)}%
                     </Badge>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {trade.accountValueAtEntry ? `$${trade.accountValueAtEntry.toFixed(0)}` : '-'}
+                  </TableCell>
+                  <TableCell>
+                    <span className={`font-semibold ${getRMultipleColor(trade.rMultiple)}`}>
+                      {trade.rMultiple !== undefined ? `${trade.rMultiple >= 0 ? '+' : ''}${(trade.rMultiple * 100).toFixed(2)}%` : '-'}
+                    </span>
                   </TableCell>
                   <TableCell>{format(new Date(trade.entryDate), 'MMM dd, yyyy')}</TableCell>
                   <TableCell>{format(new Date(trade.exitDate), 'MMM dd, yyyy')}</TableCell>
@@ -130,7 +145,7 @@ export function HistoricTradesTable({ trades, onEditTransaction, onDeleteTrade }
                 </TableRow>
                 {expandedRows.has(trade.id) && (
                   <TableRow>
-                    <TableCell colSpan={13} className="bg-muted/30 p-0">
+                    <TableCell colSpan={15} className="bg-muted/30 p-0">
                       <Card className="m-4 border-0 shadow-none">
                         <CardContent className="pt-6">
                           <div className="mb-4">

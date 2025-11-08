@@ -2,9 +2,10 @@ import { useEffect, useState, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, TrendingUp, TrendingDown, DollarSign, Target, BarChart3 } from 'lucide-react';
+import { AlertCircle, TrendingUp, TrendingDown, DollarSign, BarChart3 } from 'lucide-react';
 import { type DateRange } from 'react-day-picker';
 import tradesAPI from '@/api/client';
+import { RMultipleChart } from '@/components/RMultipleChart';
 import type { TradeMetrics, ClosedTradeMetrics } from '@/types';
 
 interface TradeStats {
@@ -20,16 +21,19 @@ interface TradeStats {
   worstTrade: ClosedTradeMetrics | null;
   tradesByType: Record<string, number>;
   tradesByRating: Record<number, number>;
+  currentCapital: number;
+  roiPercentage: number;
+  capitalGrowth: number;
 }
 
-export function Stats({ dateRange }: { dateRange: DateRange | undefined }) {
+export function Stats({ dateRange, startingCapital }: { dateRange: DateRange | undefined; startingCapital: number }) {
   const [stats, setStats] = useState<TradeStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [allActiveTrades, setAllActiveTrades] = useState<TradeMetrics[]>([]);
   const [allClosedTrades, setAllClosedTrades] = useState<ClosedTradeMetrics[]>([]);
 
-  const calculateStats = (activeTrades: TradeMetrics[], closedTrades: ClosedTradeMetrics[]): TradeStats => {
+const calculateStats = (activeTrades: TradeMetrics[], closedTrades: ClosedTradeMetrics[], startingCapital: number): TradeStats => {
     const totalTrades = activeTrades.length + closedTrades.length;
     const activeTradesCount = activeTrades.length;
     const closedTradesCount = closedTrades.length;
@@ -71,6 +75,11 @@ export function Stats({ dateRange }: { dateRange: DateRange | undefined }) {
       }
     });
 
+    // Calculate capital metrics
+    const currentCapital = startingCapital + totalRealizedPL;
+    const roiPercentage = startingCapital > 0 ? ((currentCapital - startingCapital) / startingCapital) * 100 : 0;
+    const capitalGrowth = currentCapital - startingCapital;
+
     return {
       totalTrades,
       activeTrades: activeTradesCount,
@@ -84,6 +93,9 @@ export function Stats({ dateRange }: { dateRange: DateRange | undefined }) {
       worstTrade,
       tradesByType,
       tradesByRating,
+      currentCapital,
+      roiPercentage,
+      capitalGrowth,
     };
   };
 
@@ -121,12 +133,13 @@ export function Stats({ dateRange }: { dateRange: DateRange | undefined }) {
     try {
       setIsLoading(true);
       setError(null);
-      const [active, closed] = await Promise.all([tradesAPI.getActiveTrades(), tradesAPI.getClosedTrades()]);
+      const active = await tradesAPI.getActiveTrades();
+      const closed = await tradesAPI.getClosedTradesWithRMetrics(startingCapital);
       setAllActiveTrades(active);
       setAllClosedTrades(closed);
 
       const { filteredActive, filteredClosed } = filterTradesByDateRange(active, closed, dateRange);
-      const calculatedStats = calculateStats(filteredActive, filteredClosed);
+      const calculatedStats = calculateStats(filteredActive, filteredClosed, startingCapital);
       setStats(calculatedStats);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to load stats';
@@ -134,13 +147,13 @@ export function Stats({ dateRange }: { dateRange: DateRange | undefined }) {
     } finally {
       setIsLoading(false);
     }
-  }, [dateRange, filterTradesByDateRange]);
+  }, [dateRange, filterTradesByDateRange, startingCapital]);
 
   const recalculateStats = useCallback(() => {
     const { filteredActive, filteredClosed } = filterTradesByDateRange(allActiveTrades, allClosedTrades, dateRange);
-    const calculatedStats = calculateStats(filteredActive, filteredClosed);
+    const calculatedStats = calculateStats(filteredActive, filteredClosed, startingCapital);
     setStats(calculatedStats);
-  }, [allActiveTrades, allClosedTrades, dateRange, filterTradesByDateRange]);
+  }, [allActiveTrades, allClosedTrades, dateRange, filterTradesByDateRange, startingCapital]);
 
   useEffect(() => {
     fetchStats();
@@ -191,7 +204,41 @@ export function Stats({ dateRange }: { dateRange: DateRange | undefined }) {
       </div>
 
       {/* Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Current Capital</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className={`text-2xl font-bold ${stats.capitalGrowth >= 0 ? 'text-success' : 'text-destructive'}`}>
+              ${stats.currentCapital.toFixed(2)}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Starting: ${startingCapital.toFixed(0)}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">ROI</CardTitle>
+            {stats.roiPercentage >= 0 ? (
+              <TrendingUp className="h-4 w-4 text-success" />
+            ) : (
+              <TrendingDown className="h-4 w-4 text-destructive" />
+            )}
+          </CardHeader>
+          <CardContent>
+            <div className={`text-2xl font-bold ${stats.roiPercentage >= 0 ? 'text-success' : 'text-destructive'}`}>
+              {stats.roiPercentage >= 0 ? '+' : ''}{stats.roiPercentage.toFixed(2)}%
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Return on investment
+            </p>
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Trades</CardTitle>
@@ -236,19 +283,6 @@ export function Stats({ dateRange }: { dateRange: DateRange | undefined }) {
             </p>
           </CardContent>
         </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Win Rate</CardTitle>
-            <Target className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.winRate.toFixed(1)}%</div>
-            <p className="text-xs text-muted-foreground">
-              {stats.closedTrades > 0 ? `${Math.round(stats.winRate / 100 * stats.closedTrades)}/${stats.closedTrades} trades` : 'No closed trades yet'}
-            </p>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Detailed Stats */}
@@ -268,7 +302,7 @@ export function Stats({ dateRange }: { dateRange: DateRange | undefined }) {
                 </div>
                 <div className="text-right">
                   <p className="font-bold text-success">+${stats.bestTrade.realizedPL.toFixed(2)}</p>
-                  <p className="text-xs text-muted-foreground">{stats.bestTrade.returnPercentage.toFixed(2)}%</p>
+                  <p className="text-xs text-muted-foreground">{(stats.bestTrade.pnlPercentage ?? stats.bestTrade.returnPercentage ?? 0).toFixed(2)}%</p>
                 </div>
               </div>
             )}
@@ -281,7 +315,7 @@ export function Stats({ dateRange }: { dateRange: DateRange | undefined }) {
                 </div>
                 <div className="text-right">
                   <p className="font-bold text-destructive">${stats.worstTrade.realizedPL.toFixed(2)}</p>
-                  <p className="text-xs text-muted-foreground">{stats.worstTrade.returnPercentage.toFixed(2)}%</p>
+                  <p className="text-xs text-muted-foreground">{(stats.worstTrade.pnlPercentage ?? stats.worstTrade.returnPercentage ?? 0).toFixed(2)}%</p>
                 </div>
               </div>
             )}
@@ -332,6 +366,9 @@ export function Stats({ dateRange }: { dateRange: DateRange | undefined }) {
           </CardContent>
         </Card>
       </div>
+
+      {/* R-Multiple Chart */}
+      <RMultipleChart trades={allClosedTrades} isLoading={isLoading} />
     </div>
   );
 }

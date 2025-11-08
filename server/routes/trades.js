@@ -3,6 +3,67 @@ import db from '../db.js';
 
 const router = express.Router();
 
+// Helper function to get all trades ordered by entry date
+function getAllTradesOrdered() {
+  const trades = db.prepare('SELECT * FROM trades ORDER BY created_at ASC').all();
+  return trades.map(trade => {
+    const metrics = calculateTradeMetrics(trade.id);
+    return {
+      ...metrics,
+      entryDate: metrics.transactions.length > 0 ? metrics.transactions[0].transaction_date : null,
+    };
+  });
+}
+
+// Helper function to calculate account value at a specific trade
+function calculateAccountValueAtTrade(tradeId, startingCapital = 10000) {
+  const allTrades = getAllTradesOrdered();
+  let accountValue = startingCapital;
+
+  for (const trade of allTrades) {
+    if (trade.id === tradeId) {
+      // Return account value BEFORE this trade
+      return accountValue;
+    }
+
+    // If trade is closed, add its P&L to account value
+    if (trade.status === 'closed') {
+      const totalSellCost = trade.transactions
+        .filter(t => t.type === 'sell_partial' || t.type === 'sell_all')
+        .reduce((sum, t) => sum + (t.price * t.quantity), 0);
+      const totalBuyCost = trade.transactions
+        .filter(t => t.type === 'buy')
+        .reduce((sum, t) => sum + (t.price * t.quantity), 0);
+      accountValue += (totalSellCost - totalBuyCost);
+    }
+  }
+
+  return accountValue;
+}
+
+// Helper function to calculate R-multiple for a trade
+function calculateRMultiple(tradeId, startingCapital = 10000) {
+  const metrics = calculateTradeMetrics(tradeId);
+  
+  if (metrics.status !== 'closed') {
+    return null; // Only calculate for closed trades
+  }
+
+  const accountValueAtEntry = calculateAccountValueAtTrade(tradeId, startingCapital);
+  
+  const totalSellCost = metrics.transactions
+    .filter(t => t.type === 'sell_partial' || t.type === 'sell_all')
+    .reduce((sum, t) => sum + (t.price * t.quantity), 0);
+  const totalBuyCost = metrics.transactions
+    .filter(t => t.type === 'buy')
+    .reduce((sum, t) => sum + (t.price * t.quantity), 0);
+  
+  const pnl = totalSellCost - totalBuyCost;
+  const rMultiple = accountValueAtEntry > 0 ? pnl / accountValueAtEntry : 0;
+
+  return rMultiple;
+}
+
 // Helper function to calculate trade metrics
 function calculateTradeMetrics(tradeId) {
   const trade = db.prepare('SELECT * FROM trades WHERE id = ?').get(tradeId);
@@ -80,6 +141,53 @@ router.get('/closed', (req, res) => {
         returnPercentage,
         entryDate,
         exitDate,
+      };
+    });
+
+    res.json(enrichedTrades);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /api/trades/with-rmetrics - Get all closed trades with R-multiple and account value metrics
+router.get('/with-rmetrics', (req, res) => {
+  try {
+    const { startingCapital = 10000 } = req.query;
+    const parsedCapital = parseFloat(startingCapital);
+
+    const trades = db.prepare('SELECT * FROM trades WHERE status = ? ORDER BY created_at ASC').all('closed');
+    
+    const enrichedTrades = trades.map(trade => {
+      const metrics = calculateTradeMetrics(trade.id);
+      const totalSellCost = metrics.transactions
+        .filter(t => t.type === 'sell_partial' || t.type === 'sell_all')
+        .reduce((sum, t) => sum + (t.price * t.quantity), 0);
+      
+      const totalSoldQty = metrics.transactions
+        .filter(t => t.type === 'sell_partial' || t.type === 'sell_all')
+        .reduce((sum, t) => sum + t.quantity, 0);
+
+      const averageExitPrice = totalSoldQty > 0 ? totalSellCost / totalSoldQty : 0;
+      const realizedPL = totalSellCost - (metrics.totalBought * metrics.averageBuyPrice);
+      const pnlPercentage = metrics.totalBought > 0 ? (realizedPL / (metrics.totalBought * metrics.averageBuyPrice)) * 100 : 0;
+
+      const entryDate = metrics.transactions.length > 0 ? metrics.transactions[0].transaction_date : null;
+      const exitDate = metrics.transactions.length > 0 ? metrics.transactions[metrics.transactions.length - 1].transaction_date : null;
+
+      // Calculate account value at entry and R-multiple
+      const accountValueAtEntry = calculateAccountValueAtTrade(trade.id, parsedCapital);
+      const rMultiple = accountValueAtEntry > 0 ? realizedPL / accountValueAtEntry : 0;
+
+      return {
+        ...metrics,
+        averageExitPrice,
+        realizedPL,
+        pnlPercentage,
+        entryDate,
+        exitDate,
+        accountValueAtEntry,
+        rMultiple,
       };
     });
 

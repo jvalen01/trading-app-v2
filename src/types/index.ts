@@ -32,9 +32,12 @@ export interface TradeMetrics extends Trade {
 export interface ClosedTradeMetrics extends TradeMetrics {
   averageExitPrice: number;
   realizedPL: number;
-  returnPercentage: number;
+  returnPercentage?: number; // For backward compatibility
+  pnlPercentage?: number; // New field name
   entryDate: string;
   exitDate: string;
+  accountValueAtEntry?: number;
+  rMultiple?: number;
 }
 
 export interface AddTradeRequest {

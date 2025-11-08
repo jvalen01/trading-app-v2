@@ -37,6 +37,21 @@ db.exec(`
     FOREIGN KEY (trade_id) REFERENCES trades(id) ON DELETE CASCADE
   );
 
+  CREATE TABLE IF NOT EXISTS capital_settings (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    setting_name TEXT UNIQUE NOT NULL,
+    setting_value REAL NOT NULL,
+    updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE IF NOT EXISTS capital_adjustments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    adjustment_amount REAL NOT NULL,
+    reason TEXT,
+    adjusted_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+  );
+
   CREATE INDEX IF NOT EXISTS idx_trade_id ON transactions(trade_id);
   CREATE INDEX IF NOT EXISTS idx_ticker ON trades(ticker);
 `);

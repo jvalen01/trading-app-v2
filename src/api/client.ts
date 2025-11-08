@@ -49,6 +49,14 @@ export const tradesAPI = {
     return data;
   },
 
+  // Get all closed trades with R-multiple metrics
+  getClosedTradesWithRMetrics: async (startingCapital: number = 10000): Promise<ClosedTradeMetrics[]> => {
+    const { data } = await api.get<ClosedTradeMetrics[]>('/trades/with-rmetrics', {
+      params: { startingCapital },
+    });
+    return data;
+  },
+
   // Get transactions for a specific trade
   getTradeTransactions: async (tradeId: number) => {
     const { data } = await api.get(`/trades/${tradeId}/transactions`);
@@ -88,6 +96,47 @@ export const tradesAPI = {
   // Delete a trade
   deleteTrade: async (tradeId: number) => {
     const { data } = await api.delete(`/trades/${tradeId}`);
+    return data;
+  },
+};
+
+// Capital endpoints
+export const capitalAPI = {
+  // Get capital settings
+  getSettings: async () => {
+    const { data } = await api.get('/capital/settings');
+    return data;
+  },
+
+  // Update starting capital
+  setStartingCapital: async (startingCapital: number) => {
+    const { data } = await api.post('/capital/settings', { startingCapital });
+    return data;
+  },
+
+  // Add capital adjustment
+  addAdjustment: async (amount: number, reason?: string) => {
+    const { data } = await api.post('/capital/adjust', { amount, reason });
+    return data;
+  },
+
+  // Get all adjustments
+  getAdjustments: async () => {
+    const { data } = await api.get('/capital/adjustments');
+    return data;
+  },
+
+  // Delete an adjustment
+  deleteAdjustment: async (id: number) => {
+    const { data } = await api.delete(`/capital/adjustments/${id}`);
+    return data;
+  },
+
+  // Get capital summary
+  getSummary: async (startingCapital?: number) => {
+    const { data } = await api.get('/capital/summary', {
+      params: startingCapital ? { startingCapital } : {},
+    });
     return data;
   },
 };

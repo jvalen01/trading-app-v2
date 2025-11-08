@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import tradesRouter from './routes/trades.js';
+import capitalRouter from './routes/capital.js';
 
 const app = express();
 const PORT = 3001;
@@ -17,6 +18,7 @@ app.use((req, res, next) => {
 
 // Routes
 app.use('/api/trades', tradesRouter);
+app.use('/api/capital', capitalRouter);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
