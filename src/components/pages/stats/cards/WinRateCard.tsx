@@ -11,7 +11,7 @@ export function WinRateCard({ stats }: WinRateCardProps) {
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="text-lg">Win Rates</CardTitle>
-        <CardDescription className="text-sm">Win rates by trade type, NCFD & time of entry</CardDescription>
+                <CardDescription className="text-sm">Win rates by trade type, NCFD & time of entry</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Trade Types - Horizontal Layout */}
@@ -89,6 +89,55 @@ export function WinRateCard({ stats }: WinRateCardProps) {
               </div>
             ))}
           </div>
+        </div>
+
+        {/* Best Combinations */}
+        <hr />
+        <div>
+          <h4 className="font-medium text-sm mb-2">Top Performing Combinations</h4>
+          {stats.bestCombinations.length > 0 ? (
+            <div className="space-y-2">
+              {stats.bestCombinations.map((combo, index) => (
+                <div key={`${combo.tradeType}-${combo.ncfdRange}-${combo.timeOfEntry}`} className="p-3 rounded bg-muted/20 border">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className="text-xs">
+                        #{index + 1}
+                      </Badge>
+                      <span className="text-sm font-medium">Best Combination</span>
+                    </div>
+                    <Badge
+                      variant={combo.winRate >= 60 ? "default" : combo.winRate >= 40 ? "secondary" : "destructive"}
+                      className={`text-xs px-1.5 py-0.5 ${combo.winRate >= 60 ? "bg-success text-success-foreground" : ""}`}
+                    >
+                      {combo.winRate.toFixed(0)}% Win Rate
+                    </Badge>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 text-xs">
+                    <div>
+                      <span className="text-muted-foreground">Type:</span>
+                      <div className="font-medium">{combo.tradeType}</div>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">NCFD:</span>
+                      <div className="font-medium">{combo.ncfdRange}</div>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Entry:</span>
+                      <div className="font-medium">{combo.timeOfEntry}</div>
+                    </div>
+                  </div>
+                  <div className="mt-2 text-xs text-muted-foreground">
+                    {combo.winningTrades}/{combo.totalTrades} winning trades
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center text-muted-foreground py-4 text-sm">
+              Need more trading data to analyze combinations (minimum 10 combinations with 2+ trades each)
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

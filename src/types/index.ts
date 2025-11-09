@@ -17,6 +17,7 @@ export type Transaction = {
   price: number;
   quantity: number;
   transaction_date: string;
+  commission: number;
   notes?: string;
   created_at: string;
 };
@@ -46,6 +47,7 @@ export type AddTradeRequest = {
   price: number;
   quantity: number;
   date: string;
+  commission?: number;
   notes?: string;
   trade_rating?: number;
   trade_type?: 'Breakout' | 'Short Pivot' | 'Parabolic Long' | 'Day Trade' | 'EP' | 'UnR';
@@ -57,12 +59,14 @@ export type SellPartialRequest = {
   quantity: number;
   price: number;
   date: string;
+  commission?: number;
   notes?: string;
 };
 
 export type SellAllRequest = {
   price: number;
   date: string;
+  commission?: number;
   notes?: string;
 };
 
@@ -70,5 +74,6 @@ export type UpdateTransactionRequest = {
   price: number;
   quantity: number;
   date: string;
+  commission?: number;
   notes?: string;
 };

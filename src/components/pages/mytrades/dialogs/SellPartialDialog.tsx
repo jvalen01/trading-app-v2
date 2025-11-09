@@ -12,9 +12,10 @@ import { useSellPartial } from '@/hooks/use-trades';
 import type { TradeMetrics } from '@/types';
 
 const sellPartialSchema = z.object({
-  quantity: z.coerce.number().positive('Quantity must be greater than 0'),
+  quantity: z.coerce.number().int('Quantity must be a whole number').positive('Quantity must be greater than 0'),
   price: z.coerce.number().positive('Price must be greater than 0').multipleOf(0.01, 'Max 2 decimal places'),
   date: z.string().refine((date) => new Date(date) <= new Date(), 'Date cannot be in the future'),
+  commission: z.coerce.number().min(0, 'Commission must be 0 or greater').optional(),
   notes: z.string().optional(),
 });
 
@@ -36,6 +37,7 @@ export function SellPartialDialog({ open, onOpenChange, trade }: SellPartialDial
       quantity: 0,
       price: 0,
       date: new Date().toISOString().split('T')[0],
+      commission: 1,
       notes: '',
     },
   });
@@ -118,8 +120,8 @@ export function SellPartialDialog({ open, onOpenChange, trade }: SellPartialDial
                   <FormControl>
                     <Input
                       type="number"
-                      placeholder="0.00"
-                      step="0.01"
+                      placeholder="0"
+                      step="1"
                       {...field}
                       onChange={(e) => {
                         field.onChange(e);
@@ -160,6 +162,19 @@ export function SellPartialDialog({ open, onOpenChange, trade }: SellPartialDial
                   <FormLabel>Date</FormLabel>
                   <FormControl>
                     <Input type="date" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="commission"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Commission</FormLabel>
+                  <FormControl>
+                    <Input type="number" placeholder="1.00" step="0.01" min="0" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

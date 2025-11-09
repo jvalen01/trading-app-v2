@@ -13,8 +13,9 @@ import type { Transaction } from '@/types';
 
 const editTransactionSchema = z.object({
   price: z.coerce.number().positive('Price must be greater than 0').multipleOf(0.01, 'Max 2 decimal places'),
-  quantity: z.coerce.number().positive('Quantity must be greater than 0'),
+  quantity: z.coerce.number().int('Quantity must be a whole number').positive('Quantity must be greater than 0'),
   date: z.string().refine((date) => new Date(date) <= new Date(), 'Date cannot be in the future'),
+  commission: z.coerce.number().min(0, 'Commission must be 0 or greater').optional(),
   notes: z.string().optional(),
 });
 
@@ -36,6 +37,7 @@ export function EditTransactionDialog({ open, onOpenChange, transaction }: EditT
       price: transaction?.price || 0,
       quantity: transaction?.quantity || 0,
       date: transaction?.transaction_date || new Date().toISOString().split('T')[0],
+      commission: transaction?.commission || 1,
       notes: transaction?.notes || '',
     },
   });
@@ -47,6 +49,7 @@ export function EditTransactionDialog({ open, onOpenChange, transaction }: EditT
         price: transaction.price,
         quantity: transaction.quantity,
         date: transaction.transaction_date,
+        commission: transaction.commission,
         notes: transaction.notes || '',
       });
     }
@@ -111,7 +114,7 @@ export function EditTransactionDialog({ open, onOpenChange, transaction }: EditT
                 <FormItem>
                   <FormLabel>Quantity</FormLabel>
                   <FormControl>
-                    <Input type="number" placeholder="0.00" step="0.01" {...field} />
+                    <Input type="number" placeholder="0" step="1" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -125,6 +128,19 @@ export function EditTransactionDialog({ open, onOpenChange, transaction }: EditT
                   <FormLabel>Date</FormLabel>
                   <FormControl>
                     <Input type="date" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="commission"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Commission</FormLabel>
+                  <FormControl>
+                    <Input type="number" placeholder="1.00" step="0.01" min="0" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

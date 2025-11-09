@@ -23,6 +23,9 @@ export type TradeStats = {
   biggestDrawdownPercentage: number;
   averageDrawdown: number;
   averageDrawdownPercentage: number;
+  bestMonth: { month: string; performance: number } | null;
+  worstMonth: { month: string; performance: number } | null;
+  averageMonthPerformance: number;
   winRateByNCFD: {
     '<20': { winRate: number; totalTrades: number; winningTrades: number };
     '20-50': { winRate: number; totalTrades: number; winningTrades: number };
@@ -31,4 +34,12 @@ export type TradeStats = {
   };
   winRateByTradeType: Record<string, { winRate: number; totalTrades: number; winningTrades: number }>;
   winRateByTimeOfEntry: Record<string, { winRate: number; totalTrades: number; winningTrades: number }>;
+  bestCombinations: Array<{
+    tradeType: string;
+    ncfdRange: string;
+    timeOfEntry: string;
+    winRate: number;
+    totalTrades: number;
+    winningTrades: number;
+  }>;
 };

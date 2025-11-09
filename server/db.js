@@ -33,6 +33,7 @@ db.exec(`
     price REAL NOT NULL,
     quantity REAL NOT NULL,
     transaction_date TEXT NOT NULL,
+    commission REAL DEFAULT 1,
     notes TEXT,
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (trade_id) REFERENCES trades(id) ON DELETE CASCADE
@@ -61,6 +62,15 @@ db.exec(`
 try {
   db.exec(`
     ALTER TABLE trades ADD COLUMN time_of_entry TEXT CHECK(time_of_entry IN ('ORB1', 'ORB5', 'ORB15', 'ORB30', 'ORB60', 'EOD', 'Other'));
+  `);
+} catch (error) {
+  // Column might already exist, ignore error
+}
+
+// Add commission column if it doesn't exist (for existing databases)
+try {
+  db.exec(`
+    ALTER TABLE transactions ADD COLUMN commission REAL DEFAULT 1;
   `);
 } catch (error) {
   // Column might already exist, ignore error

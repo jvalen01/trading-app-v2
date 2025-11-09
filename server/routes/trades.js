@@ -211,7 +211,7 @@ router.get('/:tradeId/transactions', (req, res) => {
 // POST /api/trades/buy - Create new trade or add to existing
 router.post('/buy', (req, res) => {
   try {
-    const { ticker, price, quantity, date, notes, trade_rating, trade_type, ncfd, time_of_entry } = req.body;
+    const { ticker, price, quantity, date, commission, notes, trade_rating, trade_type, ncfd, time_of_entry } = req.body;
 
     // Validate inputs
     if (!ticker || !price || !quantity || !date) {
@@ -239,9 +239,9 @@ router.post('/buy', (req, res) => {
 
     // Add transaction
     db.prepare(`
-      INSERT INTO transactions (trade_id, type, price, quantity, transaction_date, notes, created_at)
-      VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-    `).run(trade.id, 'buy', price, quantity, date, notes || null);
+      INSERT INTO transactions (trade_id, type, price, quantity, transaction_date, commission, notes, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+    `).run(trade.id, 'buy', price, quantity, date, commission || 1, notes || null);
 
     // Update trade's updated_at
     db.prepare('UPDATE trades SET updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(trade.id);
@@ -257,7 +257,7 @@ router.post('/buy', (req, res) => {
 router.post('/:tradeId/sell-partial', (req, res) => {
   try {
     const { tradeId } = req.params;
-    const { quantity, price, date, notes } = req.body;
+    const { quantity, price, date, commission, notes } = req.body;
 
     if (!quantity || !price || !date) {
       return res.status(400).json({ error: 'Missing required fields' });
@@ -275,9 +275,9 @@ router.post('/:tradeId/sell-partial', (req, res) => {
 
     // Add sell transaction
     db.prepare(`
-      INSERT INTO transactions (trade_id, type, price, quantity, transaction_date, notes, created_at)
-      VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-    `).run(tradeId, 'sell_partial', price, quantity, date, notes || null);
+      INSERT INTO transactions (trade_id, type, price, quantity, transaction_date, commission, notes, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+    `).run(tradeId, 'sell_partial', price, quantity, date, commission || 1, notes || null);
 
     // Update trade's updated_at
     db.prepare('UPDATE trades SET updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(tradeId);
@@ -293,7 +293,7 @@ router.post('/:tradeId/sell-partial', (req, res) => {
 router.post('/:tradeId/sell-all', (req, res) => {
   try {
     const { tradeId } = req.params;
-    const { price, date, notes } = req.body;
+    const { price, date, commission, notes } = req.body;
 
     if (!price || !date) {
       return res.status(400).json({ error: 'Missing required fields' });
@@ -308,9 +308,9 @@ router.post('/:tradeId/sell-all', (req, res) => {
 
     // Add sell transaction for entire position
     db.prepare(`
-      INSERT INTO transactions (trade_id, type, price, quantity, transaction_date, notes, created_at)
-      VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-    `).run(tradeId, 'sell_all', price, metrics.currentQuantity, date, notes || null);
+      INSERT INTO transactions (trade_id, type, price, quantity, transaction_date, commission, notes, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+    `).run(tradeId, 'sell_all', price, metrics.currentQuantity, date, commission || 1, notes || null);
 
     // Close the trade
     db.prepare('UPDATE trades SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run('closed', tradeId);
@@ -326,7 +326,7 @@ router.post('/:tradeId/sell-all', (req, res) => {
 router.put('/transaction/:transactionId', (req, res) => {
   try {
     const { transactionId } = req.params;
-    const { price, quantity, date, notes } = req.body;
+    const { price, quantity, date, commission, notes } = req.body;
 
     if (!price || !quantity || !date) {
       return res.status(400).json({ error: 'Missing required fields' });
@@ -339,9 +339,9 @@ router.put('/transaction/:transactionId', (req, res) => {
 
     db.prepare(`
       UPDATE transactions
-      SET price = ?, quantity = ?, transaction_date = ?, notes = ?
+      SET price = ?, quantity = ?, transaction_date = ?, commission = ?, notes = ?
       WHERE id = ?
-    `).run(price, quantity, date, notes || null, transactionId);
+    `).run(price, quantity, date, commission || 1, notes || null, transactionId);
 
     // Update trade's updated_at
     db.prepare('UPDATE trades SET updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(transaction.trade_id);

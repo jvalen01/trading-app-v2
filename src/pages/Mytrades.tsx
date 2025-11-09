@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import { MyTradesHeader, MyTradesErrorAlert, ActiveTradesSection, HistoricTradesSection, AddTradeDialog, SellPartialDialog, SellAllDialog, type MyTradesProps } from '../components/pages/mytrades';
+import { MyTradesHeader, MyTradesErrorAlert, ActiveTradesSection, HistoricTradesSection, AddTradeDialog, SellPartialDialog, SellAllDialog, BuyMoreDialog, type MyTradesProps } from '../components/pages/mytrades';
 import { EditTransactionDialog } from '../components/EditTransactionDialog';
-import { DeleteTransactionDialog } from '../components/common/DeleteTransactionDialog';
 import { useToast } from '../hooks/use-toast';
 import { useActiveTrades, useClosedTradesWithRMetrics, useDeleteTrade, useDeleteTransaction } from '../hooks/use-trades';
 import { type DateRange } from 'react-day-picker';
@@ -20,6 +19,7 @@ export function Mytrades({ dateRange, startingCapital }: MyTradesProps) {
 
   // Dialog states
   const [addTradeOpen, setAddTradeOpen] = useState(false);
+  const [buyMoreOpen, setBuyMoreOpen] = useState(false);
   const [selectedTrade, setSelectedTrade] = useState<TradeMetrics | null>(null);
   const [sellPartialOpen, setSellPartialOpen] = useState(false);
   const [sellAllOpen, setSellAllOpen] = useState(false);
@@ -65,7 +65,7 @@ export function Mytrades({ dateRange, startingCapital }: MyTradesProps) {
 
   const handleBuyMore = (trade: TradeMetrics) => {
     setSelectedTrade(trade);
-    setAddTradeOpen(true);
+    setBuyMoreOpen(true);
   };
 
   const handleSellPartial = (trade: TradeMetrics) => {
@@ -83,22 +83,15 @@ export function Mytrades({ dateRange, startingCapital }: MyTradesProps) {
     setEditTransactionOpen(true);
   };
 
-  const handleDeleteTransactionDialog = (transaction: Transaction) => {
-    setSelectedTransaction(transaction);
-  };
-
-  const handleDeleteTransaction = async () => {
-    if (!selectedTransaction) return;
-
+  const handleDeleteTransaction = async (transaction: Transaction) => {
     try {
-      await deleteTransactionMutation.mutateAsync(selectedTransaction.id);
-      setSelectedTransaction(null);
+      await deleteTransactionMutation.mutateAsync(transaction.id);
       toast({
         title: 'Success',
         description: 'Transaction deleted successfully',
       });
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to delete transaction';
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to delete transaction';
       toast({
         title: 'Error',
         description: message,
@@ -139,7 +132,7 @@ export function Mytrades({ dateRange, startingCapital }: MyTradesProps) {
         onSellPartial={handleSellPartial}
         onSellAll={handleSellAll}
         onEditTransaction={handleEditTransaction}
-        onDeleteTransaction={handleDeleteTransactionDialog}
+        onDeleteTransaction={handleDeleteTransaction}
       />
 
       {/* Historic Trades Section */}
@@ -152,15 +145,10 @@ export function Mytrades({ dateRange, startingCapital }: MyTradesProps) {
 
       {/* Dialogs */}
       <AddTradeDialog open={addTradeOpen} onOpenChange={setAddTradeOpen} />
+      <BuyMoreDialog open={buyMoreOpen} onOpenChange={setBuyMoreOpen} trade={selectedTrade} />
       <SellPartialDialog open={sellPartialOpen} onOpenChange={setSellPartialOpen} trade={selectedTrade} />
       <SellAllDialog open={sellAllOpen} onOpenChange={setSellAllOpen} trade={selectedTrade} />
       <EditTransactionDialog open={editTransactionOpen} onOpenChange={setEditTransactionOpen} transaction={selectedTransaction} />
-      {selectedTransaction && (
-        <DeleteTransactionDialog
-          transaction={selectedTransaction}
-          onDelete={handleDeleteTransaction}
-        />
-      )}
     </div>
   );
 }
