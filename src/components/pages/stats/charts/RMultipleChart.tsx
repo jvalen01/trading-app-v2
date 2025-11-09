@@ -178,6 +178,28 @@ export function RMultipleChart({ trades, isLoading }: RMultipleChartProps) {
                   {(rMultiples.reduce((a, b) => a + b) / rMultiples.length * 100).toFixed(2)}%
                 </span>
               </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Avg R (Winning):</span>
+                <span className="font-semibold text-success">
+                  {(() => {
+                    const winningTrades = rMultiples.filter(r => r > 0);
+                    return winningTrades.length > 0 
+                      ? (winningTrades.reduce((a, b) => a + b) / winningTrades.length * 100).toFixed(2) + '%'
+                      : 'N/A';
+                  })()}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Avg R (Losing):</span>
+                <span className="font-semibold text-danger">
+                  {(() => {
+                    const losingTrades = rMultiples.filter(r => r < 0);
+                    return losingTrades.length > 0 
+                      ? (losingTrades.reduce((a, b) => a + b) / losingTrades.length * 100).toFixed(2) + '%'
+                      : 'N/A';
+                  })()}
+                </span>
+              </div>
             </div>
           </div>
           <div className="space-y-2">

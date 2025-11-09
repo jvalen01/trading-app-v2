@@ -13,6 +13,7 @@ interface ActiveTradesTableProps {
   onSellPartial: (trade: TradeMetrics) => void;
   onSellAll: (trade: TradeMetrics) => void;
   onEditTransaction: (transaction: Transaction) => void;
+  onDeleteTransaction: (transaction: Transaction) => void;
 }
 
 export function ActiveTradesTable({
@@ -21,13 +22,14 @@ export function ActiveTradesTable({
   onSellPartial,
   onSellAll,
   onEditTransaction,
+  onDeleteTransaction,
 }: ActiveTradesTableProps) {
   const columns = useMemo<ColumnDef<TradeMetrics>[]>(
     () => [
       {
         id: 'expander',
         header: '',
-        size: 40,
+        size: 20,
         enableSorting: false,
         enableColumnFilter: false,
         enableResizing: false,
@@ -35,7 +37,7 @@ export function ActiveTradesTable({
       {
         accessorKey: 'ticker',
         header: 'Ticker',
-        size: 120,
+        size: 50,
         enableResizing: true,
         cell: ({ row }) => (
           <span className="font-semibold">{row.original.ticker}</span>
@@ -45,7 +47,7 @@ export function ActiveTradesTable({
       {
         accessorKey: 'currentQuantity',
         header: 'Quantity',
-        size: 100,
+        size: 50,
         enableResizing: true,
         cell: ({ row }) => <div className="text-right">{row.original.currentQuantity.toFixed(2)}</div>,
         filterFn: 'inNumberRange',
@@ -53,7 +55,7 @@ export function ActiveTradesTable({
       {
         accessorKey: 'averageBuyPrice',
         header: 'Avg Price',
-        size: 100,
+        size: 50,
         enableResizing: true,
         cell: ({ row }) => <div className="text-right">${row.original.averageBuyPrice.toFixed(2)}</div>,
         filterFn: 'inNumberRange',
@@ -61,7 +63,7 @@ export function ActiveTradesTable({
       {
         accessorKey: 'totalCost',
         header: 'Total Cost',
-        size: 120,
+        size: 50,
         enableResizing: true,
         cell: ({ row }) => <div className="text-right">${row.original.totalCost.toFixed(2)}</div>,
         filterFn: 'inNumberRange',
@@ -69,7 +71,7 @@ export function ActiveTradesTable({
       {
         id: 'entryDate',
         header: 'Entry Date',
-        size: 120,
+        size: 70,
         enableResizing: true,
         accessorFn: (row) => row.transactions.length > 0 ? new Date(row.transactions[0].transaction_date).getTime() : 0,
         cell: ({ row }) => (
@@ -85,7 +87,7 @@ export function ActiveTradesTable({
       {
         accessorKey: 'trade_rating',
         header: 'Rating',
-        size: 80,
+        size: 60,
         enableResizing: true,
         cell: ({ row }) => (
           <div>
@@ -131,9 +133,25 @@ export function ActiveTradesTable({
         filterFn: 'inNumberRange',
       },
       {
+        accessorKey: 'time_of_entry',
+        header: 'Time of Entry',
+        size: 80,
+        enableResizing: true,
+        cell: ({ row }) => (
+          <div>
+            {row.original.time_of_entry ? (
+              <Badge variant="outline">{row.original.time_of_entry}</Badge>
+            ) : (
+              <span className="text-muted-foreground">-</span>
+            )}
+          </div>
+        ),
+        filterFn: 'includesString',
+      },
+      {
         id: 'actions',
         header: 'Actions',
-        size: 100,
+        size: 60,
         enableResizing: false,
         cell: ({ row }) => (
           <div className="text-right">
@@ -161,27 +179,14 @@ export function ActiveTradesTable({
     [onBuyMore, onSellPartial, onSellAll]
   );
 
-  const getColumnVisibilityConfig = () => [
-    { id: 'expander', label: 'Expand', visible: true, canHide: false },
-    { id: 'ticker', label: 'Ticker', visible: true, canHide: false },
-    { id: 'currentQuantity', label: 'Quantity', visible: true, canHide: true },
-    { id: 'averageBuyPrice', label: 'Avg Price', visible: true, canHide: true },
-    { id: 'totalCost', label: 'Total Cost', visible: true, canHide: true },
-    { id: 'entryDate', label: 'Entry Date', visible: true, canHide: true },
-    { id: 'trade_rating', label: 'Rating', visible: true, canHide: true },
-    { id: 'trade_type', label: 'Type', visible: true, canHide: true },
-    { id: 'ncfd', label: 'NCFD', visible: true, canHide: true },
-    { id: 'actions', label: 'Actions', visible: true, canHide: false },
-  ];
-
   return (
     <TradeTableCore
       data={trades}
       columns={columns}
       onEditTransaction={onEditTransaction}
+      onDeleteTransaction={onDeleteTransaction}
       emptyMessage="No active trades. Start by adding a new trade."
       itemName="active trades"
-      getColumnVisibilityConfig={getColumnVisibilityConfig}
     />
   );
 }

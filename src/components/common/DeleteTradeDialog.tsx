@@ -30,7 +30,7 @@ export function DeleteTradeDialog({ trade, onDelete, children }: DeleteTradeDial
             <br />
             Ticker: {trade.ticker}
             <br />
-            Realized P&L: ${trade.realizedPL.toFixed(2)}
+            P&L: ${trade.realizedPL.toFixed(2)}
             <br />
             Return: {(trade.pnlPercentage ?? trade.returnPercentage ?? 0).toFixed(2)}%
             <br />

@@ -5,6 +5,7 @@ export type Trade = {
   trade_rating?: number; // 0-5 rating
   trade_type?: 'Breakout' | 'Short Pivot' | 'Parabolic Long' | 'Day Trade' | 'EP' | 'UnR';
   ncfd?: number; // Number input
+  time_of_entry?: 'ORB1' | 'ORB5' | 'ORB15' | 'ORB30' | 'ORB60' | 'EOD' | 'Other';
   created_at: string;
   updated_at: string;
 };
@@ -49,6 +50,7 @@ export type AddTradeRequest = {
   trade_rating?: number;
   trade_type?: 'Breakout' | 'Short Pivot' | 'Parabolic Long' | 'Day Trade' | 'EP' | 'UnR';
   ncfd?: number;
+  time_of_entry?: 'ORB1' | 'ORB5' | 'ORB15' | 'ORB30' | 'ORB60' | 'EOD' | 'Other';
 };
 
 export type SellPartialRequest = {

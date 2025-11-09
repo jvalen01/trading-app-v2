@@ -9,6 +9,7 @@ interface ActiveTradesSectionProps {
   onSellPartial: (trade: TradeMetrics) => void;
   onSellAll: (trade: TradeMetrics) => void;
   onEditTransaction: (transaction: Transaction) => void;
+  onDeleteTransaction: (transaction: Transaction) => void;
 }
 
 export function ActiveTradesSection({
@@ -18,6 +19,7 @@ export function ActiveTradesSection({
   onSellPartial,
   onSellAll,
   onEditTransaction,
+  onDeleteTransaction,
 }: ActiveTradesSectionProps) {
   return (
     <Card className="bg-card border-border shadow-lg">
@@ -35,6 +37,7 @@ export function ActiveTradesSection({
             onSellPartial={onSellPartial}
             onSellAll={onSellAll}
             onEditTransaction={onEditTransaction}
+            onDeleteTransaction={onDeleteTransaction}
           />
         )}
       </CardContent>

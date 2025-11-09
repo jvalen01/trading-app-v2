@@ -211,7 +211,7 @@ router.get('/:tradeId/transactions', (req, res) => {
 // POST /api/trades/buy - Create new trade or add to existing
 router.post('/buy', (req, res) => {
   try {
-    const { ticker, price, quantity, date, notes, trade_rating, trade_type, ncfd } = req.body;
+    const { ticker, price, quantity, date, notes, trade_rating, trade_type, ncfd, time_of_entry } = req.body;
 
     // Validate inputs
     if (!ticker || !price || !quantity || !date) {
@@ -230,10 +230,10 @@ router.post('/buy', (req, res) => {
     if (!trade) {
       // Create new trade with optional fields
       const stmt = db.prepare(`
-        INSERT INTO trades (ticker, status, trade_rating, trade_type, ncfd, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        INSERT INTO trades (ticker, status, trade_rating, trade_type, ncfd, time_of_entry, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
       `);
-      const result = stmt.run(upperTicker, 'active', trade_rating || null, trade_type || null, ncfd || null);
+      const result = stmt.run(upperTicker, 'active', trade_rating || null, trade_type || null, ncfd || null, time_of_entry || null);
       trade = { id: result.lastInsertRowid };
     }
 

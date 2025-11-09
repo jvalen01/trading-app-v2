@@ -17,6 +17,7 @@ const addTradeSchema = z.object({
   trade_rating: z.coerce.number().min(0).max(5).optional(),
   trade_type: z.enum(['Breakout', 'Short Pivot', 'Parabolic Long', 'Day Trade', 'EP', 'UnR']).optional(),
   ncfd: z.coerce.number().optional(),
+  time_of_entry: z.enum(['ORB1', 'ORB5', 'ORB15', 'ORB30', 'ORB60', 'EOD', 'Other']).optional(),
 });
 
 type AddTradeFormValues = z.infer<typeof addTradeSchema>;
@@ -34,13 +35,14 @@ export function AddTradeDialog({ open, onOpenChange }: AddTradeDialogProps) {
     resolver: zodResolver(addTradeSchema),
     defaultValues: {
       ticker: '',
-      price: 0,
-      quantity: 0,
+      price: undefined,
+      quantity: undefined,
       date: new Date().toISOString().split('T')[0],
       notes: '',
       trade_rating: undefined,
       trade_type: 'Breakout',
       ncfd: undefined,
+      time_of_entry: 'Other',
     },
   });
 
@@ -193,6 +195,30 @@ export function AddTradeDialog({ open, onOpenChange }: AddTradeDialogProps) {
                       {...field}
                       value={field.value || ''}
                     />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="time_of_entry"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Time of Entry</FormLabel>
+                  <FormControl>
+                    <select
+                      {...field}
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <option value="ORB1">ORB1</option>
+                      <option value="ORB5">ORB5</option>
+                      <option value="ORB15">ORB15</option>
+                      <option value="ORB30">ORB30</option>
+                      <option value="ORB60">ORB60</option>
+                      <option value="EOD">EOD</option>
+                      <option value="Other">Other</option>
+                    </select>
                   </FormControl>
                   <FormMessage />
                 </FormItem>

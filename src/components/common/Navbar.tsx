@@ -32,15 +32,7 @@ export function Navbar({
         <h1 className="text-2xl font-bold text-card-foreground">Trading Dashboard</h1>
       </div>
       <div className="flex items-center gap-4">
-        <CapitalManagementDialog
-          startingCapital={startingCapital}
-          onStartingCapitalChange={onStartingCapitalChange}
-        />
-        <DateRangeFilter
-          dateRange={dateRange}
-          preset={dateRangePreset}
-          onDateRangeChange={onDateRangeChange}
-        />
+       
         <nav className="flex items-center gap-2">
           <Button
             variant={currentPage === 'trades' ? 'default' : 'ghost'}
@@ -61,6 +53,15 @@ export function Navbar({
             Stats
           </Button>
         </nav>
+         <CapitalManagementDialog
+          startingCapital={startingCapital}
+          onStartingCapitalChange={onStartingCapitalChange}
+        />
+        <DateRangeFilter
+          dateRange={dateRange}
+          preset={dateRangePreset}
+          onDateRangeChange={onDateRangeChange}
+        />
       </div>
     </div>
   );

@@ -1,3 +1,3 @@
 export { StatsOverviewCards } from './StatsOverviewCards';
-export { TradeDistributionCard } from './TradeDistributionCard';
+export { WinRateCard } from './WinRateCard';
 export { TradePerformanceCard } from './TradePerformanceCard';

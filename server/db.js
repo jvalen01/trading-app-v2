@@ -21,6 +21,7 @@ db.exec(`
     trade_rating INTEGER CHECK(trade_rating >= 0 AND trade_rating <= 5),
     trade_type TEXT CHECK(trade_type IN ('Breakout', 'Short Pivot', 'Parabolic Long', 'Day Trade', 'EP', 'UnR')),
     ncfd REAL,
+    time_of_entry TEXT CHECK(time_of_entry IN ('ORB1', 'ORB5', 'ORB15', 'ORB30', 'ORB60', 'EOD', 'Other')),
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT DEFAULT CURRENT_TIMESTAMP
   );
@@ -55,5 +56,14 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_trade_id ON transactions(trade_id);
   CREATE INDEX IF NOT EXISTS idx_ticker ON trades(ticker);
 `);
+
+// Add time_of_entry column if it doesn't exist (for existing databases)
+try {
+  db.exec(`
+    ALTER TABLE trades ADD COLUMN time_of_entry TEXT CHECK(time_of_entry IN ('ORB1', 'ORB5', 'ORB15', 'ORB30', 'ORB60', 'EOD', 'Other'));
+  `);
+} catch (error) {
+  // Column might already exist, ignore error
+}
 
 export default db;

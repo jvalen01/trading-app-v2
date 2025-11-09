@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { MyTradesHeader, MyTradesErrorAlert, ActiveTradesSection, HistoricTradesSection, AddTradeDialog, SellPartialDialog, SellAllDialog, type MyTradesProps } from '../components/pages/mytrades';
 import { EditTransactionDialog } from '../components/EditTransactionDialog';
+import { DeleteTransactionDialog } from '../components/common/DeleteTransactionDialog';
 import { useToast } from '../hooks/use-toast';
-import { useActiveTrades, useClosedTradesWithRMetrics, useDeleteTrade } from '../hooks/use-trades';
+import { useActiveTrades, useClosedTradesWithRMetrics, useDeleteTrade, useDeleteTransaction } from '../hooks/use-trades';
 import { type DateRange } from 'react-day-picker';
 import type { TradeMetrics, ClosedTradeMetrics, Transaction } from '../types';
 
@@ -15,6 +16,7 @@ export function Mytrades({ dateRange, startingCapital }: MyTradesProps) {
 
   // Mutation hooks
   const deleteTradeMutation = useDeleteTrade();
+  const deleteTransactionMutation = useDeleteTransaction();
 
   // Dialog states
   const [addTradeOpen, setAddTradeOpen] = useState(false);
@@ -81,6 +83,30 @@ export function Mytrades({ dateRange, startingCapital }: MyTradesProps) {
     setEditTransactionOpen(true);
   };
 
+  const handleDeleteTransactionDialog = (transaction: Transaction) => {
+    setSelectedTransaction(transaction);
+  };
+
+  const handleDeleteTransaction = async () => {
+    if (!selectedTransaction) return;
+
+    try {
+      await deleteTransactionMutation.mutateAsync(selectedTransaction.id);
+      setSelectedTransaction(null);
+      toast({
+        title: 'Success',
+        description: 'Transaction deleted successfully',
+      });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to delete transaction';
+      toast({
+        title: 'Error',
+        description: message,
+        variant: 'destructive',
+      });
+    }
+  };
+
   const handleDeleteTrade = async (tradeId: number) => {
     try {
       await deleteTradeMutation.mutateAsync(tradeId);
@@ -113,6 +139,7 @@ export function Mytrades({ dateRange, startingCapital }: MyTradesProps) {
         onSellPartial={handleSellPartial}
         onSellAll={handleSellAll}
         onEditTransaction={handleEditTransaction}
+        onDeleteTransaction={handleDeleteTransactionDialog}
       />
 
       {/* Historic Trades Section */}
@@ -128,6 +155,12 @@ export function Mytrades({ dateRange, startingCapital }: MyTradesProps) {
       <SellPartialDialog open={sellPartialOpen} onOpenChange={setSellPartialOpen} trade={selectedTrade} />
       <SellAllDialog open={sellAllOpen} onOpenChange={setSellAllOpen} trade={selectedTrade} />
       <EditTransactionDialog open={editTransactionOpen} onOpenChange={setEditTransactionOpen} transaction={selectedTransaction} />
+      {selectedTransaction && (
+        <DeleteTransactionDialog
+          transaction={selectedTransaction}
+          onDelete={handleDeleteTransaction}
+        />
+      )}
     </div>
   );
 }

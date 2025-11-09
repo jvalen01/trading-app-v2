@@ -17,6 +17,7 @@ const sampleTrades = [
     rating: 4,
     type: 'Breakout',
     ncfd: 145,
+    time_of_entry: 'ORB1',
   },
   {
     ticker: 'TSLA',
@@ -25,6 +26,7 @@ const sampleTrades = [
     rating: 2,
     type: 'Day Trade',
     ncfd: 240,
+    time_of_entry: 'ORB5',
   },
   {
     ticker: 'MSFT',
@@ -33,6 +35,7 @@ const sampleTrades = [
     rating: 5,
     type: 'Short Pivot',
     ncfd: 360,
+    time_of_entry: 'ORB15',
   },
   {
     ticker: 'GOOGL',
@@ -41,6 +44,7 @@ const sampleTrades = [
     rating: 3,
     type: 'Day Trade',
     ncfd: 138,
+    time_of_entry: 'ORB30',
   },
   {
     ticker: 'AMZN',
@@ -49,6 +53,7 @@ const sampleTrades = [
     rating: 5,
     type: 'Parabolic Long',
     ncfd: 175,
+    time_of_entry: 'ORB60',
   },
   {
     ticker: 'META',
@@ -57,6 +62,7 @@ const sampleTrades = [
     rating: 1,
     type: 'EP',
     ncfd: 495,
+    time_of_entry: 'EOD',
   },
   {
     ticker: 'NVDA',
@@ -65,6 +71,7 @@ const sampleTrades = [
     rating: 5,
     type: 'Breakout',
     ncfd: 870,
+    time_of_entry: 'Other',
   },
   {
     ticker: 'NFLX',
@@ -73,6 +80,7 @@ const sampleTrades = [
     rating: 2,
     type: 'Day Trade',
     ncfd: 238,
+    time_of_entry: 'ORB1',
   },
 ];
 
@@ -82,9 +90,9 @@ try {
   sampleTrades.forEach((trade, index) => {
     // Insert trade
     const tradeResult = db.prepare(`
-      INSERT INTO trades (ticker, status, trade_rating, trade_type, ncfd, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-    `).run(trade.ticker, 'closed', trade.rating, trade.type, trade.ncfd);
+      INSERT INTO trades (ticker, status, trade_rating, trade_type, ncfd, time_of_entry, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    `).run(trade.ticker, 'closed', trade.rating, trade.type, trade.ncfd, trade.time_of_entry);
 
     const tradeId = tradeResult.lastInsertRowid;
 

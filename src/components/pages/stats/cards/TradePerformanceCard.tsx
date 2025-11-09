@@ -12,9 +12,9 @@ export function TradePerformanceCard({ stats }: TradePerformanceCardProps) {
         <CardTitle>Trade Performance</CardTitle>
         <CardDescription>Best and worst performing trades</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="">
         {stats.bestTrade && (
-          <div className="flex items-center justify-between p-3 bg-success/10 rounded-lg">
+          <div className="flex items-center justify-between bg-success/10 rounded-lg">
             <div>
               <p className="font-medium text-success">Best Trade</p>
               <p className="text-sm text-muted-foreground">{stats.bestTrade.ticker}</p>
@@ -25,9 +25,10 @@ export function TradePerformanceCard({ stats }: TradePerformanceCardProps) {
             </div>
           </div>
         )}
+        <hr />
 
         {stats.worstTrade && (
-          <div className="flex items-center justify-between p-3 bg-destructive/10 rounded-lg">
+          <div className="flex items-center justify-between bg-destructive/10 rounded-lg">
             <div>
               <p className="font-medium text-destructive">Worst Trade</p>
               <p className="text-sm text-muted-foreground">{stats.worstTrade.ticker}</p>
@@ -42,8 +43,31 @@ export function TradePerformanceCard({ stats }: TradePerformanceCardProps) {
         <div className="pt-4 border-t">
           <div className="flex justify-between items-center">
             <span className="text-sm font-medium">Average Trade Size</span>
-            <span className="font-bold">${stats.averageTradeSize.toFixed(2)}</span>
+            <span className="font-bold">{stats.averageTradeSizePercentage.toFixed(2)}%</span>
           </div>
+        </div>
+
+        <div className="pt-4 border-t space-y-3">
+          <div className="flex justify-between items-center">
+            <span className="text-sm font-medium">Biggest Winning Streak</span>
+            <span className="font-bold text-success">{stats.biggestWinStreak} trades</span>
+          </div>
+          <hr />
+          <div className="flex justify-between items-center">
+            <span className="text-sm font-medium">Biggest Losing Streak</span>
+            <span className="font-bold text-destructive">{stats.biggestLossStreak} trades</span>
+          </div>
+          <hr />
+          <div className="flex justify-between items-center">
+            <span className="text-sm font-medium">Biggest Drawdown</span>
+            <span className="font-bold text-destructive">{Math.abs(stats.biggestDrawdownPercentage).toFixed(2)}%</span>
+          </div>
+          <hr />
+          <div className="flex justify-between items-center">
+            <span className="text-sm font-medium">Average Drawdown</span>
+            <span className="font-bold text-destructive">{Math.abs(stats.averageDrawdownPercentage).toFixed(2)}%</span>
+          </div>
+          <hr />
         </div>
       </CardContent>
     </Card>

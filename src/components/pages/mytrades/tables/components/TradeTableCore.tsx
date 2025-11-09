@@ -17,7 +17,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { TransactionsTable } from '../TransactionsTable';
-import { TableFilters, TableColumnVisibility } from './TableFilters';
+import { TableFilters } from './TableFilters';
 import { TablePagination } from './TablePagination';
 import type { Transaction } from '@/types';
 
@@ -31,27 +31,21 @@ type TradeTableCoreProps<T extends BaseTrade> = {
   data: T[];
   columns: ColumnDef<T>[];
   onEditTransaction: (transaction: Transaction) => void;
+  onDeleteTransaction?: (transaction: Transaction) => void;
   emptyMessage: string;
   itemName: string;
-  getColumnVisibilityConfig: () => Array<{
-    id: string;
-    label: string;
-    visible: boolean;
-    canHide: boolean;
-  }>;
 }
 
 export function TradeTableCore<T extends BaseTrade>({
   data,
   columns,
   onEditTransaction,
+  onDeleteTransaction,
   emptyMessage,
   itemName,
-  getColumnVisibilityConfig,
 }: TradeTableCoreProps<T>) {
   const [sorting, setSorting] = useState<SortingState>([{ id: 'entryDate', desc: true }]);
   const [expanded, setExpanded] = useState<ExpandedState>({});
-  const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({});
   const [columnSizing, setColumnSizing] = useState<ColumnSizingState>({});
 
   const [tickerFilter, setTickerFilter] = useState('');
@@ -73,13 +67,11 @@ export function TradeTableCore<T extends BaseTrade>({
     getExpandedRowModel: getExpandedRowModel(),
     onSortingChange: setSorting,
     onExpandedChange: setExpanded,
-    onColumnVisibilityChange: setColumnVisibility,
     onColumnSizingChange: setColumnSizing,
     state: {
       sorting,
       columnFilters: filters,
       expanded,
-      columnVisibility,
       columnSizing,
     },
     initialState: {
@@ -91,12 +83,6 @@ export function TradeTableCore<T extends BaseTrade>({
     columnResizeMode: 'onChange',
   });
 
-  const handleColumnVisibilityChange = (columnId: string, visible: boolean) => {
-    table.getColumn(columnId)?.toggleVisibility(visible);
-  };
-
-  const columnVisibilityConfig = getColumnVisibilityConfig();
-
   return (
     <div className="space-y-4">
       {/* Filters and Controls */}
@@ -106,10 +92,6 @@ export function TradeTableCore<T extends BaseTrade>({
           onTickerFilterChange={setTickerFilter}
           typeFilter={typeFilter}
           onTypeFilterChange={setTypeFilter}
-        />
-        <TableColumnVisibility
-          columns={columnVisibilityConfig}
-          onColumnVisibilityChange={handleColumnVisibilityChange}
         />
       </div>
 
@@ -198,6 +180,7 @@ export function TradeTableCore<T extends BaseTrade>({
                               <TransactionsTable
                                 transactions={row.original.transactions}
                                 onEdit={onEditTransaction}
+                                {...(onDeleteTransaction && { onDelete: onDeleteTransaction })}
                               />
                             </div>
                           </CardContent>

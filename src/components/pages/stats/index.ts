@@ -1,4 +1,4 @@
-export { StatsOverviewCards, TradePerformanceCard, TradeDistributionCard } from './cards';
+export { StatsOverviewCards, TradePerformanceCard, WinRateCard } from './cards';
 export { StatsLoadingState, StatsErrorState } from './states';
-export { RMultipleChart } from './charts';
+export { RMultipleChart, PortfolioPerformanceChart } from './charts';
 export type { TradeStats } from './types';

@@ -63,7 +63,7 @@ export function HistoricTradesTable({
       },
       {
         accessorKey: 'realizedPL',
-        header: 'Realized P&L',
+        header: 'P&L',
         size: 120,
         enableResizing: true,
         cell: ({ row }) => (
@@ -180,6 +180,22 @@ export function HistoricTradesTable({
         filterFn: 'inNumberRange',
       },
       {
+        accessorKey: 'time_of_entry',
+        header: 'Time of Entry',
+        size: 80,
+        enableResizing: true,
+        cell: ({ row }) => (
+          <div>
+            {row.original.time_of_entry ? (
+              <Badge variant="outline">{row.original.time_of_entry}</Badge>
+            ) : (
+              <span className="text-muted-foreground">-</span>
+            )}
+          </div>
+        ),
+        filterFn: 'includesString',
+      },
+      {
         id: 'actions',
         header: 'Actions',
         size: 100,
@@ -196,24 +212,6 @@ export function HistoricTradesTable({
     [onDeleteTrade]
   );
 
-  const getColumnVisibilityConfig = () => [
-    { id: 'expander', label: 'Expand', visible: true, canHide: false },
-    { id: 'ticker', label: 'Ticker', visible: true, canHide: false },
-    { id: 'totalBought', label: 'Qty Traded', visible: true, canHide: true },
-    { id: 'averageBuyPrice', label: 'Avg Buy Price', visible: true, canHide: true },
-    { id: 'averageExitPrice', label: 'Avg Sell Price', visible: true, canHide: true },
-    { id: 'realizedPL', label: 'Realized P&L', visible: true, canHide: true },
-    { id: 'returnPercentage', label: 'Return %', visible: true, canHide: true },
-    { id: 'accountValueAtEntry', label: 'Account @ Entry', visible: true, canHide: true },
-    { id: 'rMultiple', label: 'R-Multiple', visible: true, canHide: true },
-    { id: 'entryDate', label: 'Entry Date', visible: true, canHide: true },
-    { id: 'exitDate', label: 'Exit Date', visible: true, canHide: true },
-    { id: 'trade_rating', label: 'Rating', visible: true, canHide: true },
-    { id: 'trade_type', label: 'Type', visible: true, canHide: true },
-    { id: 'ncfd', label: 'NCFD', visible: true, canHide: true },
-    { id: 'actions', label: 'Actions', visible: true, canHide: false },
-  ];
-
   return (
     <TradeTableCore
       data={trades}
@@ -221,7 +219,6 @@ export function HistoricTradesTable({
       onEditTransaction={onEditTransaction}
       emptyMessage="No closed trades yet."
       itemName="closed trades"
-      getColumnVisibilityConfig={getColumnVisibilityConfig}
     />
   );
 }

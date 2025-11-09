@@ -1,16 +1,18 @@
-import { Edit2 } from 'lucide-react';
+import { Edit2, Trash2 } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
+import { DeleteTransactionDialog } from '@/components/common/DeleteTransactionDialog';
 import type { Transaction } from '@/types';
 
 interface TransactionsTableProps {
   transactions: Transaction[];
   onEdit: (transaction: Transaction) => void;
+  onDelete?: (transaction: Transaction) => void;
 }
 
-export function TransactionsTable({ transactions, onEdit }: TransactionsTableProps) {
+export function TransactionsTable({ transactions, onEdit, onDelete }: TransactionsTableProps) {
   const getTypeBadgeColor = (type: string) => {
     switch (type) {
       case 'buy':
@@ -71,6 +73,20 @@ export function TransactionsTable({ transactions, onEdit }: TransactionsTablePro
                 >
                   <Edit2 className="h-4 w-4" />
                 </Button>
+                {onDelete && (
+                  <DeleteTransactionDialog
+                    transaction={transaction}
+                    onDelete={onDelete}
+                  >
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      className="h-8 w-8 p-0"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </DeleteTransactionDialog>
+                )}
               </div>
             </TableCell>
           </TableRow>
