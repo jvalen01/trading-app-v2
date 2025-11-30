@@ -1,10 +1,10 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Card } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { useBuyTrade } from '@/hooks/use-trades';
 
@@ -23,12 +23,7 @@ const addTradeSchema = z.object({
 
 type AddTradeFormValues = z.infer<typeof addTradeSchema>;
 
-interface AddTradeDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-}
-
-export function AddTradeDialog({ open, onOpenChange }: AddTradeDialogProps) {
+export function AddTradeForm() {
   const { toast } = useToast();
   const buyTradeMutation = useBuyTrade();
 
@@ -56,7 +51,6 @@ export function AddTradeDialog({ open, onOpenChange }: AddTradeDialogProps) {
         description: 'Trade added successfully',
       });
       form.reset();
-      onOpenChange(false);
     } catch (error) {
       toast({
         title: 'Error',
@@ -67,33 +61,34 @@ export function AddTradeDialog({ open, onOpenChange }: AddTradeDialogProps) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Add Trade</DialogTitle>
-          <DialogDescription>Register a new trade or add to an existing position</DialogDescription>
-        </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+    <Card className="p-6 mb-6">
+      <div className="mb-4">
+        <h2 className="text-2xl font-bold">Add New Trade</h2>
+        <p className="text-muted-foreground text-sm">Register a new trade or add to an existing position</p>
+      </div>
+      
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <FormField
               control={form.control}
               name="ticker"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Ticker</FormLabel>
+                  <FormLabel>Ticker *</FormLabel>
                   <FormControl>
                     <Input placeholder="e.g., AAPL" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
-              )}   
+              )}
             />
             <FormField
               control={form.control}
               name="quantity"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Quantity</FormLabel>
+                  <FormLabel>Quantity *</FormLabel>
                   <FormControl>
                     <Input type="number" placeholder="0" step="1" {...field} />
                   </FormControl>
@@ -106,7 +101,7 @@ export function AddTradeDialog({ open, onOpenChange }: AddTradeDialogProps) {
               name="price"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Price</FormLabel>
+                  <FormLabel>Price *</FormLabel>
                   <FormControl>
                     <Input type="number" placeholder="0.00" step="0.01" {...field} />
                   </FormControl>
@@ -119,7 +114,7 @@ export function AddTradeDialog({ open, onOpenChange }: AddTradeDialogProps) {
               name="date"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Date</FormLabel>
+                  <FormLabel>Date *</FormLabel>
                   <FormControl>
                     <Input type="date" {...field} />
                   </FormControl>
@@ -145,7 +140,7 @@ export function AddTradeDialog({ open, onOpenChange }: AddTradeDialogProps) {
               name="notes"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Notes (Optional)</FormLabel>
+                  <FormLabel>Notes</FormLabel>
                   <FormControl>
                     <Input placeholder="Add any notes..." {...field} />
                   </FormControl>
@@ -239,17 +234,18 @@ export function AddTradeDialog({ open, onOpenChange }: AddTradeDialogProps) {
                 </FormItem>
               )}
             />
-            <DialogFooter>
-              <Button type="button" variant="destructive" onClick={() => onOpenChange(false)}>
-                Cancel
-              </Button>
-              <Button variant="default" type="submit" disabled={buyTradeMutation.isPending}>
-                {buyTradeMutation.isPending ? 'Adding...' : 'Add Trade'}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
+          </div>
+
+          <div className="flex justify-end gap-2 pt-4">
+            <Button variant="outline" type="reset">
+              Clear
+            </Button>
+            <Button type="submit" disabled={buyTradeMutation.isPending}>
+              {buyTradeMutation.isPending ? 'Adding...' : 'Add Trade'}
+            </Button>
+          </div>
+        </form>
+      </Form>
+    </Card>
   );
 }

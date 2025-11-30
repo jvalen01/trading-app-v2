@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { MyTradesHeader, MyTradesErrorAlert, ActiveTradesSection, HistoricTradesSection, AddTradeDialog, SellPartialDialog, SellAllDialog, BuyMoreDialog, type MyTradesProps } from '../components/pages/mytrades';
+import { MyTradesHeader, MyTradesErrorAlert, ActiveTradesSection, HistoricTradesSection, SellPartialDialog, SellAllDialog, BuyMoreDialog, type MyTradesProps } from '../components/pages/mytrades';
+import { AddTradeForm } from '../components/pages/mytrades/sections/AddTradeForm';
 import { EditTransactionDialog } from '../components/EditTransactionDialog';
 import { useToast } from '../hooks/use-toast';
 import { useActiveTrades, useClosedTradesWithRMetrics, useDeleteTrade, useDeleteTransaction } from '../hooks/use-trades';
@@ -18,7 +19,6 @@ export function Mytrades({ dateRange, startingCapital }: MyTradesProps) {
   const deleteTransactionMutation = useDeleteTransaction();
 
   // Dialog states
-  const [addTradeOpen, setAddTradeOpen] = useState(false);
   const [buyMoreOpen, setBuyMoreOpen] = useState(false);
   const [selectedTrade, setSelectedTrade] = useState<TradeMetrics | null>(null);
   const [sellPartialOpen, setSellPartialOpen] = useState(false);
@@ -119,8 +119,11 @@ export function Mytrades({ dateRange, startingCapital }: MyTradesProps) {
 
   return (
     <div className="flex-1 w-full h-full space-y-4 p-6 bg-background overflow-y-auto">
-      {/* Header with Add Trade Button */}
-      <MyTradesHeader onAddTrade={() => setAddTradeOpen(true)} />
+      {/* Header */}
+      <MyTradesHeader />
+
+      {/* Add Trade Form */}
+      <AddTradeForm />
 
       {error && <MyTradesErrorAlert error={error?.message || 'Failed to load trades'} />}
 
@@ -144,7 +147,6 @@ export function Mytrades({ dateRange, startingCapital }: MyTradesProps) {
       />
 
       {/* Dialogs */}
-      <AddTradeDialog open={addTradeOpen} onOpenChange={setAddTradeOpen} />
       <BuyMoreDialog open={buyMoreOpen} onOpenChange={setBuyMoreOpen} trade={selectedTrade} />
       <SellPartialDialog open={sellPartialOpen} onOpenChange={setSellPartialOpen} trade={selectedTrade} />
       <SellAllDialog open={sellAllOpen} onOpenChange={setSellAllOpen} trade={selectedTrade} />

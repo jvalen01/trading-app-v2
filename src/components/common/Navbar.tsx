@@ -35,7 +35,7 @@ export function Navbar({
        
         <nav className="flex items-center gap-2">
           <Button
-            variant={currentPage === 'trades' ? 'default' : 'ghost'}
+            variant={currentPage === 'trades' ? 'default' : 'secondary'}
             size="sm"
             onClick={() => onNavigate('trades')}
             className="gap-2"
@@ -44,7 +44,7 @@ export function Navbar({
             My Trades
           </Button>
           <Button
-            variant={currentPage === 'stats' ? 'default' : 'ghost'}
+            variant={currentPage === 'stats' ? 'default' : 'secondary'}
             size="sm"
             onClick={() => onNavigate('stats')}
             className="gap-2"
