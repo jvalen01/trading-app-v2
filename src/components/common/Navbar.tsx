@@ -1,10 +1,10 @@
 import { Button } from '@/components/ui/button';
-import { BarChart3, LayoutDashboard } from 'lucide-react';
+import { BarChart3, LayoutDashboard, CalendarDays } from 'lucide-react';
 import { type DateRange } from 'react-day-picker';
 import { DateRangeFilter, type DateRangePreset } from '@/components/common/DateRangeFilter';
 import { CapitalManagementDialog } from '@/components/common/CapitalManagementDialog';
 
-type Page = 'trades' | 'stats';
+type Page = 'trades' | 'stats' | 'calendar';
 
 interface NavbarProps {
   onNavigate: (page: Page) => void;
@@ -51,6 +51,15 @@ export function Navbar({
           >
             <BarChart3 className="h-4 w-4" />
             Stats
+          </Button>
+          <Button
+            variant={currentPage === 'calendar' ? 'default' : 'secondary'}
+            size="sm"
+            onClick={() => onNavigate('calendar')}
+            className="gap-2"
+          >
+            <CalendarDays className="h-4 w-4" />
+            Calendar
           </Button>
         </nav>
          <CapitalManagementDialog

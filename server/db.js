@@ -19,7 +19,7 @@ db.exec(`
     ticker TEXT NOT NULL,
     status TEXT DEFAULT 'active' CHECK(status IN ('active', 'closed')),
     trade_rating INTEGER CHECK(trade_rating >= 0 AND trade_rating <= 5),
-    trade_type TEXT CHECK(trade_type IN ('Breakout', 'Short Pivot', 'Parabolic Long', 'Day Trade', 'EP', 'UnR')),
+    trade_type TEXT CHECK(trade_type IN ('Breakout', 'Short Pivot', 'Parabolic Long', 'Day Trade', 'EP', 'UnR', 'Anticipation', 'Other')),
     ncfd REAL,
     time_of_entry TEXT CHECK(time_of_entry IN ('ORB1', 'ORB5', 'ORB15', 'ORB30', 'ORB60', 'EOD', 'Other')),
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,

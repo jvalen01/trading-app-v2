@@ -16,7 +16,7 @@ const addTradeSchema = z.object({
   commission: z.coerce.number().min(0, 'Commission must be 0 or greater').optional(),
   notes: z.string().optional(),
   trade_rating: z.coerce.number().min(0).max(5).optional(),
-  trade_type: z.enum(['Breakout', 'Short Pivot', 'Parabolic Long', 'Day Trade', 'EP', 'UnR']).optional(),
+  trade_type: z.enum(['Breakout', 'Anticipation', 'Short Pivot', 'Parabolic Long', 'Day Trade', 'EP', 'UnR']).optional(),
   ncfd: z.coerce.number().min(0, 'NCFD must be between 0 and 100').max(100, 'NCFD must be between 0 and 100').optional(),
   time_of_entry: z.enum(['ORB1', 'ORB5', 'ORB15', 'ORB30', 'ORB60', 'EOD', 'Other']).optional(),
 });
@@ -185,6 +185,7 @@ export function AddTradeDialog({ open, onOpenChange }: AddTradeDialogProps) {
                       className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       <option value="Breakout">Breakout</option>
+                      <option value="Anticipation">Anticipation</option>
                       <option value="Short Pivot">Short Pivot</option>
                       <option value="Parabolic Long">Parabolic Long</option>
                       <option value="Day Trade">Day Trade</option>

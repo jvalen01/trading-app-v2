@@ -67,9 +67,9 @@ export function HistoricTradesTable({
         size: 120,
         enableResizing: true,
         cell: ({ row }) => (
-          <Badge className={row.original.realizedPL >= 0 ? 'bg-success text-success-foreground' : 'bg-danger text-danger-foreground'}>
+          <div className={row.original.realizedPL >= 0 ? 'text-success' : 'text-danger font-bold'}>
             ${row.original.realizedPL.toFixed(2)}
-          </Badge>
+          </div>
         ),
         filterFn: 'inNumberRange',
       },
@@ -82,9 +82,9 @@ export function HistoricTradesTable({
         cell: ({ row }) => {
           const returnPct = row.original.pnlPercentage ?? row.original.returnPercentage ?? 0;
           return (
-            <Badge className={returnPct >= 0 ? 'bg-success text-success-foreground' : 'bg-danger text-danger-foreground'}>
+            <div className={returnPct >= 0 ? 'text-success' : 'text-danger font-bold'}>
               {returnPct > 0 ? '+' : ''}{returnPct.toFixed(2)}%
-            </Badge>
+            </div>
           );
         },
         filterFn: 'inNumberRange',

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, Fragment } from 'react';
 import {
   useReactTable,
   getCoreRowModel,
@@ -142,9 +142,8 @@ export function TradeTableCore<T extends BaseTrade>({
           <TableBody>
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
-                <>
+                <Fragment key={row.id}>
                   <TableRow
-                    key={row.id}
                     className="hover:bg-card/80 border-border"
                   >
                     {row.getVisibleCells().map((cell) => (
@@ -171,7 +170,7 @@ export function TradeTableCore<T extends BaseTrade>({
                     ))}
                   </TableRow>
                   {row.getIsExpanded() && (
-                    <TableRow>
+                    <TableRow key={`${row.id}-expanded`}>
                       <TableCell colSpan={row.getVisibleCells().length} className="bg-muted/30 p-0">
                         <Card className="m-4 border-0 shadow-none">
                           <CardContent className="pt-6">
@@ -188,7 +187,7 @@ export function TradeTableCore<T extends BaseTrade>({
                       </TableCell>
                     </TableRow>
                   )}
-                </>
+                </Fragment>
               ))
             ) : (
               <TableRow>

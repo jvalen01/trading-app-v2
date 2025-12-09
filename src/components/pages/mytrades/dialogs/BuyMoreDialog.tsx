@@ -45,8 +45,8 @@ export function BuyMoreDialog({ open, onOpenChange, trade }: BuyMoreDialogProps)
 
   // Calculate new average price after adding more
   const currentValue = (trade?.averageBuyPrice || 0) * (trade?.currentQuantity || 0);
-  const additionalValue = watchPrice * watchQuantity;
-  const totalQuantity = (trade?.currentQuantity || 0) + watchQuantity;
+  const additionalValue = Number(watchPrice) * Number(watchQuantity);
+  const totalQuantity = (trade?.currentQuantity || 0) + Number(watchQuantity);
   const newAveragePrice = totalQuantity > 0 ? (currentValue + additionalValue) / totalQuantity : 0;
 
   const onSubmit = async (values: BuyMoreFormValues) => {

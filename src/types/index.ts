@@ -3,7 +3,7 @@ export type Trade = {
   ticker: string;
   status: 'active' | 'closed';
   trade_rating?: number; // 0-5 rating
-  trade_type?: 'Breakout' | 'Short Pivot' | 'Parabolic Long' | 'Day Trade' | 'EP' | 'UnR';
+  trade_type?: 'Breakout' | 'Anticipation' | 'Short Pivot' | 'Parabolic Long' | 'Day Trade' | 'EP' | 'UnR';
   ncfd?: number; // Number input
   time_of_entry?: 'ORB1' | 'ORB5' | 'ORB15' | 'ORB30' | 'ORB60' | 'EOD' | 'Other';
   created_at: string;
@@ -50,7 +50,7 @@ export type AddTradeRequest = {
   commission?: number;
   notes?: string;
   trade_rating?: number;
-  trade_type?: 'Breakout' | 'Short Pivot' | 'Parabolic Long' | 'Day Trade' | 'EP' | 'UnR';
+  trade_type?: 'Breakout' | 'Anticipation' | 'Short Pivot' | 'Parabolic Long' | 'Day Trade' | 'EP' | 'UnR';
   ncfd?: number;
   time_of_entry?: 'ORB1' | 'ORB5' | 'ORB15' | 'ORB30' | 'ORB60' | 'EOD' | 'Other';
 };

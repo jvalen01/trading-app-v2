@@ -206,10 +206,10 @@ export function PortfolioPerformanceChart({ trades, startingCapital, isLoading }
         }
       },
       tooltip: {
-        backgroundColor: 'hsl(var(--background))',
-        titleColor: 'hsl(var(--foreground))',
-        bodyColor: 'hsl(var(--foreground))',
-        borderColor: 'hsl(var(--border))',
+        backgroundColor: 'rgba(0, 0, 0, 0.9)',
+        titleColor: '#ffffff',
+        bodyColor: '#ffffff',
+        borderColor: '#cccccc',
         borderWidth: 1,
         cornerRadius: 8,
         callbacks: {

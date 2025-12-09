@@ -8,8 +8,9 @@ import { capitalAPI } from './api/client';
 // Lazy load pages for code splitting
 const Mytrades = lazy(() => import('./pages/Mytrades'));
 const Stats = lazy(() => import('./pages/Stats'));
+const Calendar = lazy(() => import('./pages/Calendar'));
 
-type Page = 'trades' | 'stats';
+type Page = 'trades' | 'stats' | 'calendar';
 
 function App() {
   const [currentPage, setCurrentPage] = useState<Page>('trades');
@@ -85,6 +86,8 @@ function App() {
         return <Mytrades dateRange={dateRange} startingCapital={startingCapital} />;
       case 'stats':
         return <Stats dateRange={dateRange} startingCapital={startingCapital} />;
+      case 'calendar':
+        return <Calendar startingCapital={startingCapital} />;
       default:
         return <Mytrades dateRange={dateRange} startingCapital={startingCapital} />;
     }
